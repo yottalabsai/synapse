@@ -1,0 +1,73 @@
+name: Build and Deploy to ACK
+
+on:
+  push:
+    branches: [ "no-action" ]
+
+# Environment variables available to all jobs and steps in this workflow.
+env:
+  AWS_REGION: us-west-2                 # set this to your preferred AWS region, e.g. us-west-1
+  ECR_REPOSITORY: k8s-maestro         # set this to your Amazon ECR repository name
+  ENV: prod
+  NAMESPACE: yotta-saas
+  K8S_CLUSTER_NAME: yotta-aws-k8s-cluster
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v3
+
+      - name: Setup Go environment
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.22.6'
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.PROD_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.PROD_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          go mod download
+          go mod vendor
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ${ECR_REPOSITORY} main.go
+          docker build -t ${ECR_REGISTRY}/${ECR_REPOSITORY}:latest .
+          docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}:latest
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: 'v1.30.0'
+
+      - name: Update kube config
+        run: aws eks update-kubeconfig --name ${{ env.K8S_CLUSTER_NAME }} --region ${{ env.AWS_REGION }}
+
+      - name: Replace variables in deployment.yaml
+        uses: datamonsters/replace-action@v2
+        with:
+          files: 'k8s/deployment_${{env.ENV}}.yaml'
+          replacements: '$ECR_REGISTRY=${{ steps.login-ecr.outputs.registry }},$IMAGE_TAG=latest'
+
+      - name: Run K8S
+        run: |
+          pwd
+          echo ${{env.ENV}}
+          kubectl apply -f k8s/deployment_${{ env.ENV }}.yaml
+          kubectl rollout restart deployment/${{ env.ECR_REPOSITORY }} -n ${{ env.NAMESPACE }}
+          kubectl rollout status deployment/${{ env.ECR_REPOSITORY }} -n ${{ env.NAMESPACE }}

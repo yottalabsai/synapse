@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: k8s-maestro
+  namespace: yotta-saas
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: k8s-maestro
+  template:
+    metadata:
+      labels:
+        app: k8s-maestro
+    spec:
+      nodeSelector:
+        "nvidia.com/gpu": "false"
+      volumes:
+        - name: host-time
+          hostPath:
+            path: /etc/localtime
+      containers:
+        - name: k8s-maestro
+          image: $ECR_REGISTRY/k8s-maestro:$IMAGE_TAG
+          imagePullPolicy: Always
+          resources:
+            requests:
+              memory: "2Gi"
+              cpu: "1"
+            limits:
+              memory: "2Gi"
+              cpu: "2"
+          env:
+            - name: PROFILE
+              value: dev
+          ports:
+            - containerPort: 8001
+          volumeMounts:
+            - name: host-time
+              mountPath: /etc/localtime
+              readOnly: true
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: k8s-maestro-service
+  namespace: yotta-saas
+spec:
+  type: ClusterIP
+  selector:
+    app: k8s-maestro
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8001
+      name: http
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: k8s-maestro-ingress
+  namespace: yotta-saas
+  annotations:
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
+    alb.ingress.kubernetes.io/ssl-redirect: '443'
+    alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:us-west-2:225989363927:certificate/528f519c-6464-46b1-ad3b-b0d828888763"
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/healthcheck-path: "/api/v1/health"
+spec:
+  ingressClassName: alb
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: k8s-maestro-service
+                port:
+                  number: 80
