@@ -12,8 +12,8 @@ import (
 )
 
 var (
-	DB     *gorm.DB
 	Config *config
+	DB     *gorm.DB
 	Redis  redis.UniversalClient
 )
 

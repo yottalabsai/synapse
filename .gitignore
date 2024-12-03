@@ -28,4 +28,4 @@ logs
 .git
 postgres
 main
-k8s-maestro
+synapse

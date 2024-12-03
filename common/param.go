@@ -1,26 +1,24 @@
 package common
 
 import (
+	"errors"
 	"fmt"
 )
 
 const (
-	Uni4goHttpOK      int = 0
+	SynapseHttpOK     int = 0
 	HttpOk            int = 200
 	HttpInternalError int = 500
 )
 
 var (
-	ErrBadArgument          = NewApiError(107000, "Bad argument")
-	ErrUnauthorized         = NewApiError(107001, "Unauthorized")
-	ErrSymbolConfigNotFound = NewApiError(107002, "Symbol config not found")
-	ErrAssetDelisting       = NewApiError(107028, "Trading unavailable due to the delisting of {{.Symbol}}")
+	ErrBadArgument    = NewApiError(107000, "Bad argument")
+	ErrUnauthorized   = NewApiError(107001, "Unauthorized")
+	ErrAssetDelisting = NewApiError(107028, "Trading unavailable due to the delisting of {{.Symbol}}")
 
 	//  系统暂停的错误代码
 	ErrSystemPaused = &ApiResponse{Code: -100000, Msg: "This service is temporarily unavailable. Please contact customer support."} // 系统暂停, data需要有值
 
-	//  后管
-	ErrSystemBusy = NewApiError(107020, "System busy")
 )
 
 // 钱包服务错误码
@@ -29,7 +27,7 @@ var (
 	ServiceCodeTokenTransfers = 107030 // 划转服务
 )
 
-func ConvertWalletErrCode(code int, msg string) *ApiError {
+func ConvertSaaSErrCode(code int, msg string) *ApiError {
 	return &ApiError{
 		Code: ApiErrorCode(code),
 		Msg:  msg,
@@ -83,7 +81,8 @@ func Ok(data any) *ApiResponse {
 }
 
 func GuessError(err error, unknownErrHandler func(error)) (httpCode int, apiResp *ApiResponse) {
-	if apiErr, ok := err.(*ApiError); ok {
+	var apiErr *ApiError
+	if errors.As(err, &apiErr) {
 		return HttpOk, &ApiResponse{
 			Code:         int(apiErr.Code),
 			Msg:          apiErr.Error(),

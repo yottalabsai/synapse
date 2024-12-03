@@ -1,17 +1,17 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: k8s-maestro
+  name: synapse
   namespace: yotta-saas
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: k8s-maestro
+      app: synapse
   template:
     metadata:
       labels:
-        app: k8s-maestro
+        app: synapse
     spec:
       nodeSelector:
         "nvidia.com/gpu": "false"
@@ -20,8 +20,8 @@ spec:
           hostPath:
             path: /etc/localtime
       containers:
-        - name: k8s-maestro
-          image: $ECR_REGISTRY/k8s-maestro:$IMAGE_TAG
+        - name: synapse
+          image: $ECR_REGISTRY/synapse:$IMAGE_TAG
           imagePullPolicy: Always
           resources:
             requests:
@@ -43,12 +43,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: k8s-maestro-service
+  name: synapse-service
   namespace: yotta-saas
 spec:
   type: ClusterIP
   selector:
-    app: k8s-maestro
+    app: synapse
   ports:
     - protocol: TCP
       port: 80
@@ -58,7 +58,7 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: k8s-maestro-ingress
+  name: synapse-ingress
   namespace: yotta-saas
   annotations:
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
@@ -76,6 +76,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: k8s-maestro-service
+                name: synapse-service
                 port:
                   number: 80
