@@ -111,3 +111,19 @@ kubectl get deployment -n kube-system aws-load-balancer-controllers
 
 ### 添加子网 kubernetes.io/role/elb
 通过UI添加子网标签 kubernetes.io/role/elb=1
+
+
+# 项目配置
+
+## 自动构建
+
+由于依赖另外一个私有项目“endorphin”, 需要首先在github上配置公钥，然后设置以下配置，进行代码拉取：
+
+```shell
+go env -w GOPRIVATE="github.com/yottalabsai/*"
+git config --global url."git@github.com:".insteadOf "https://github.com/"
+# go mod vendor
+#
+go get github.com/yottalabsai/endorphin               
+
+```
