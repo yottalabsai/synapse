@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package hello;
+
+option go_package = "proto/genproto/";
+
+message HelloRequest{
+  string name = 1;
+}
+
+message HelloResponse{
+  int32 code = 1;
+  string value = 2;
+}
+
+// 定义我们的服务（可定义多个服务,每个服务可定义多个接口）
+service HelloService {
+  rpc SayHello (HelloRequest) returns (HelloResponse){};
+}
+
+// protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative proto/helloworld.proto
+// protoc --go_out=.  --go-grpc_out=.  proto/helloworld.proto

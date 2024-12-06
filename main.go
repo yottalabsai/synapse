@@ -4,10 +4,8 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/pkg/errors"
-	"go.uber.org/zap"
 	stdlog "log"
+	"net"
 	"net/http"
 	"os/signal"
 	"synapse/config"
@@ -15,6 +13,14 @@ import (
 	"synapse/routers"
 	"syscall"
 	"time"
+
+	pb "synapse/proto/genproto"
+	helloGrpcServer "synapse/service/grpc/helloworld"
+
+	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
+	"go.uber.org/zap"
+	"google.golang.org/grpc"
 )
 
 var (
@@ -62,6 +68,10 @@ func main() {
 		logger.Fatal("start app failed", zap.Error(err))
 	}
 
+	if err := startGrpc(); err != nil {
+		logger.Fatal("start grpc failed", zap.Error(err))
+	}
+
 	<-ctx.Done()
 	logger.Info("app service stopped")
 }
@@ -87,5 +97,24 @@ func Start(ctx context.Context) error {
 		}
 	}()
 
+	return nil
+}
+
+func startGrpc() error {
+	grpcServerConfig := config.Config.GrpcServer
+	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%d", grpcServerConfig.Host, grpcServerConfig.Port))
+	if err != nil {
+		log.Log.Error("failed to listen: %v", err)
+	}
+	s := grpc.NewServer()
+
+	pb.RegisterHelloServiceServer(s, &helloGrpcServer.Server{})
+
+	log.Log.Info("server listening at %v", lis.Addr())
+
+	if err := s.Serve(lis); err != nil {
+		log.Log.Error("failed to serve: %v", err)
+		return err
+	}
 	return nil
 }
