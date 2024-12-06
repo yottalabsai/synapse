@@ -124,6 +124,7 @@ go env -w GOPRIVATE="github.com/yottalabsai/*"
 git config --global url."git@github.com:".insteadOf "https://github.com/"
 # go mod vendor
 #
-go get github.com/yottalabsai/endorphin               
+go get github.com/yottalabsai/endorphin        
+go mod tidy       
 
 ```
