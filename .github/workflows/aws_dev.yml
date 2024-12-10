@@ -45,6 +45,8 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           GH_ACCESS_TOKEN: ${{ secrets.PRIVATE_GITHUB_ACCESS_TOKEN }}
         run: |
+          go env -w GOPRIVATE="github.com/yottalabsai/*"
+          git config --global url."git@github.com:".insteadOf "https://github.com/"
           go mod download
           go mod vendor
           CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ${ECR_REPOSITORY} main.go
