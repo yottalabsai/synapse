@@ -17,7 +17,7 @@ datasource:
     port: 5432
     username: yotta
     password: 2KyjjCwYVsndsG8tjJFrwy
-    database: yotta
+    database: postgres
     search_path: synapse
     time_zone: UTC
     ssl_mode: disable
