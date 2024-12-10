@@ -25,16 +25,16 @@ spec:
           imagePullPolicy: Always
           resources:
             requests:
-              memory: "2Gi"
+              memory: "1Gi"
               cpu: "1"
             limits:
-              memory: "2Gi"
-              cpu: "2"
+              memory: "1Gi"
+              cpu: "1"
           env:
             - name: PROFILE
               value: dev
           ports:
-            - containerPort: 8001
+            - containerPort: 8002
           volumeMounts:
             - name: host-time
               mountPath: /etc/localtime
@@ -52,7 +52,7 @@ spec:
   ports:
     - protocol: TCP
       port: 80
-      targetPort: 8001
+      targetPort: 8002
       name: http
 ---
 apiVersion: networking.k8s.io/v1

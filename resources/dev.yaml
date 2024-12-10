@@ -1,6 +1,6 @@
 server:
   host: 0.0.0.0
-  port: 10004
+  port: 8002
   gin:
     mode: debug
 
@@ -12,20 +12,21 @@ datasource:
     conn_max_idle_time: 1m
   gorm:
     log_level: info
-  exchange:
-    host: 127.0.0.1
-    port: 25432
-    username: postgres
-    password: 123456
+  postgres:
+    host: yotta-saas.cluster-c300ogiqm7d5.us-west-2.rds.amazonaws.com
+    port: 5432
+    username: yotta
+    password: 2KyjjCwYVsndsG8tjJFrwy
     database: yotta
+    search_path: synapse
     time_zone: UTC
     ssl_mode: disable
 
 redis:
   mode: standalone # cluster
   network: tcp
-  host: 127.0.0.1
-  port: 26379
+  host: redis7-service
+  port: 6379
   password:
   db: 0
   tls_enabled: false

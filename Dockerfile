@@ -15,4 +15,4 @@ EXPOSE 8002
 ENV PROFILE k8s
 
 # Set the entrypoint
-CMD ["sh", "-c", "/app/synapse ${PROFILE}"]
+CMD ["sh", "-c", "/app/synapse"]
