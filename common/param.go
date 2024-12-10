@@ -12,19 +12,11 @@ const (
 )
 
 var (
-	ErrBadArgument    = NewApiError(107000, "Bad argument")
-	ErrUnauthorized   = NewApiError(107001, "Unauthorized")
-	ErrAssetDelisting = NewApiError(107028, "Trading unavailable due to the delisting of {{.Symbol}}")
-
-	//  系统暂停的错误代码
-	ErrSystemPaused = &ApiResponse{Code: -100000, Msg: "This service is temporarily unavailable. Please contact customer support."} // 系统暂停, data需要有值
-
-)
-
-// 钱包服务错误码
-var (
-	ServiceCodeTokenTrades    = 107029 // 币币交易服务
-	ServiceCodeTokenTransfers = 107030 // 划转服务
+	// ErrSystemPaused 系统暂停的错误代码
+	ErrSystemPaused     = &ApiResponse{Code: -100000, Msg: "This service is temporarily unavailable. Please contact customer support."} // 系统暂停, data需要有值
+	ErrBadArgument      = NewApiError(100000, "Bad argument")
+	ErrUnauthorized     = NewApiError(100001, "Unauthorized")
+	ErrEndpointNotFound = NewApiError(100002, "Endpoint not found")
 )
 
 func ConvertSaaSErrCode(code int, msg string) *ApiError {
@@ -85,7 +77,7 @@ func GuessError(err error, unknownErrHandler func(error)) (httpCode int, apiResp
 	if errors.As(err, &apiErr) {
 		return HttpOk, &ApiResponse{
 			Code:         int(apiErr.Code),
-			Msg:          apiErr.Error(),
+			Msg:          apiErr.Msg,
 			TemplateData: apiErr.TemplateData,
 		}
 	}

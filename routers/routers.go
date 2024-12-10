@@ -14,20 +14,22 @@ import (
 func InitRouter(ctx context.Context, engine *gin.Engine) error {
 	engine.Use(ginzap.RecoveryWithZap(log.ZapLog, true))
 	// Init other services
-	svc := service.NewSwapService(config.DB)
+	svc := service.NewServerlessService(config.DB)
 	// Health check
 	// engine.GET("/actuator/health/liveness", healthHandler)
 	var (
 		// 分组
-		apiGroupAuth = engine.Group("/api", middleware.RequestHeader(), middleware.Authentication())
+		apiGroupAuth = engine.Group("/api/v0", middleware.RequestHeader(), middleware.Authentication())
 	)
 
 	// 缓存处理
 	//  tokenProvider = cache.NewDBTokenProvider(datasource.Db, datasource.WalletDB)
 	//  poolProvider.Start(ctx, 30*time.Second)
 	{
-		ctl := controllers.NewDemo(svc)
-		apiGroupAuth.GET("/demo", ctl.Demo)
+		ctl := controllers.NewServerlessController(svc)
+		apiGroupAuth.GET("/endpoints/:endpointId", ctl.FindByEndpointId)
+		apiGroupAuth.POST("/endpoints", ctl.CreateEndpoint)
+		apiGroupAuth.POST("/endpoints/:endpointId/inference", ctl.Inference)
 		// 执行缓存清理
 		// task.RunTransferTasks(ctx, svc)
 	}

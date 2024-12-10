@@ -12,6 +12,7 @@ import (
 	"os/signal"
 	"synapse/config"
 	"synapse/log"
+	"synapse/repository/types"
 	"synapse/routers"
 	"syscall"
 	"time"
@@ -58,12 +59,21 @@ func main() {
 		logger.Fatal("init datasource failed", zap.Error(err))
 	}
 
+	MigrateDB()
+
 	if err := Start(ctx); err != nil {
 		logger.Fatal("start app failed", zap.Error(err))
 	}
 
 	<-ctx.Done()
 	logger.Info("app service stopped")
+}
+
+func MigrateDB() {
+	err := config.DB.AutoMigrate(&types.ServerlessResource{})
+	if err != nil {
+		logger.Error("db migration error", zap.Error(err))
+	}
 }
 
 func Start(ctx context.Context) error {

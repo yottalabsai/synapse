@@ -18,7 +18,7 @@ datasource:
     username: postgres
     password: 123456
     database: yotta
-    search_path: k8s_maestro
+    search_path: synapse
     time_zone: UTC
     ssl_mode: disable
 

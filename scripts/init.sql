@@ -1,7 +1,7 @@
-CREATE SCHEMA IF NOT EXISTS k8s_maestro;
+CREATE SCHEMA IF NOT EXISTS synapse;
 
 SET
-search_path TO k8s_maestro;
+search_path TO synapse;
 
 -- Kubernetes 资源表
 DROP TABLE IF EXISTS kubernetes_resources;

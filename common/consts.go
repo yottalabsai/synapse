@@ -4,22 +4,9 @@ import (
 	"fmt"
 )
 
-const KeyPairInactive = 0
-const KeyPairActive = 1
-
-const S3MountPath = "/data"
-
-const ServiceStatusStopped = -1
-const ServiceStatusInit = 0
-const ServiceStatusSuccess = 1
-
-const InstanceStatusFailed = -1
-const InstanceStatusInit = 0
-const InstanceStatusRunning = 1
-const InstanceStatusStopping = 2
-const InstanceStatusStopped = 3
-const InstanceStatusShuttingDown = 4
-const InstanceStatusTerminated = 5
+const StatusStopped = -1
+const StatusInit = 0
+const StatusSuccess = 1
 
 const ResourceStatusCheckLockPrefix = "lock:resource:check"
 const JobResourceStatusCheckSecond = 10
