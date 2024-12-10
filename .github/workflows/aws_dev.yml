@@ -43,6 +43,7 @@ jobs:
         id: build-image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          GH_ACCESS_TOKEN: ${{ secrets.PRIVATE_GITHUB_ACCESS_TOKEN }}
         run: |
           go mod download
           go mod vendor
