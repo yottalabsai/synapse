@@ -35,7 +35,9 @@ spec:
               value: dev
           ports:
             - containerPort: 8002
+              name: http
             - containerPort: 50051
+              name: grpc
           volumeMounts:
             - name: host-time
               mountPath: /etc/localtime
