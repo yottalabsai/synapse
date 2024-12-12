@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"google.golang.org/grpc/reflection"
 	stdlog "log"
 	"net"
 	"net/http"
@@ -122,6 +123,8 @@ func startGrpc() error {
 	}
 
 	s := grpc.NewServer()
+	// Register reflection service on gRPC server.
+	reflection.Register(s)
 	synapse_grpc.RegisterSynapseServiceServer(s, service.NewSynapseServer())
 
 	log.Log.Info("grpc server listening at %v", lis.Addr())
