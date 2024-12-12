@@ -4,10 +4,8 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/pkg/errors"
-	"go.uber.org/zap"
 	stdlog "log"
+	"net"
 	"net/http"
 	"os/signal"
 	"synapse/config"
@@ -16,6 +14,14 @@ import (
 	"synapse/routers"
 	"syscall"
 	"time"
+
+	"synapse/service"
+
+	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
+	synapse_grpc "github.com/yottalabsai/endorphin/pkg/services/synapse"
+	"go.uber.org/zap"
+	"google.golang.org/grpc"
 )
 
 var (
@@ -97,5 +103,32 @@ func Start(ctx context.Context) error {
 		}
 	}()
 
+	// start grpc server
+	go func() {
+		if err := startGrpc(); err != nil {
+			logger.Error("grpc server stopped", zap.Error(err))
+		}
+	}()
+
+	return nil
+}
+
+func startGrpc() error {
+	grpcServerConfig := config.Config.GrpcServer
+	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%d", grpcServerConfig.Host, grpcServerConfig.Port))
+	if err != nil {
+		log.Log.Error("failed to listen: %v", err)
+		return err
+	}
+
+	s := grpc.NewServer()
+	synapse_grpc.RegisterSynapseServiceServer(s, service.NewSynapseServer())
+
+	log.Log.Info("grpc server listening at %v", lis.Addr())
+
+	if err := s.Serve(lis); err != nil {
+		log.Log.Error("failed to serve: %v", err)
+		return err
+	}
 	return nil
 }

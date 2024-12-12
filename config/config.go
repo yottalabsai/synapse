@@ -1,14 +1,15 @@
 package config
 
 import (
-	"github.com/pkg/errors"
-	"github.com/redis/go-redis/v9"
-	"github.com/spf13/viper"
-	"gorm.io/gorm"
 	"os"
 	"reflect"
 	"synapse/log"
 	"time"
+
+	"github.com/pkg/errors"
+	"github.com/redis/go-redis/v9"
+	"github.com/spf13/viper"
+	"gorm.io/gorm"
 )
 
 var (
@@ -25,6 +26,7 @@ type config struct {
 	ApiKey                  string           `json:"api_key" yaml:"api_key" mapstructure:"api_key"`
 	LockExpirationDuration  time.Duration    `json:"lock_expiration_duration" yaml:"lock_expiration_duration" mapstructure:"lock_expiration_duration"`
 	AcquireLockSpinDuration time.Duration    `json:"acquire_lock_spin_duration" yaml:"acquire_lock_spin_duration" mapstructure:"acquire_lock_spin_duration"`
+	GrpcServer              GrpcServerConfig `json:"grpc_server" yaml:"grpc_server" mapstructure:"grpc_server"`
 }
 
 type ServerConfig struct {
@@ -120,6 +122,11 @@ type RedisConfig struct {
 type SentryConfig struct {
 	Enabled bool   `json:"enabled" yaml:"enabled" mapstructure:"enabled"`
 	DSN     string `json:"dsn" yaml:"dsn" mapstructure:"dsn"`
+}
+
+type GrpcServerConfig struct {
+	Host string `json:"host" yaml:"host" mapstructure:"host"`
+	Port int    `json:"port" yaml:"port" mapstructure:"port"`
 }
 
 const Environment = "PROFILE"
