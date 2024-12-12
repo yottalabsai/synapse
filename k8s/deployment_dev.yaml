@@ -57,10 +57,22 @@ spec:
       port: 80
       targetPort: 8002
       name: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: synapse-grpc-service
+  namespace: yotta-saas
+spec:
+  # bypass kube-proxy
+  ports:
     - protocol: TCP
       port: 8080
       targetPort: 50051
       name: grpc
+  clusterIP: None
+  selector:
+    app: synapse
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -111,6 +123,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: synapse
+                name: synapse-grpc-service
                 port:
                   number: 8080
