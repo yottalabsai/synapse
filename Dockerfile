@@ -9,7 +9,7 @@ COPY ./synapse /app
 COPY ./resources /app/resources
 
 # Expose the port the application runs on
-EXPOSE 8002
+EXPOSE 8002 50051
 
 # Define an argument that can be passed at build time
 ENV PROFILE k8s
