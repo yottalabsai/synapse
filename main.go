@@ -21,6 +21,7 @@ import (
 	synapse_grpc "github.com/yottalabsai/endorphin/pkg/services/synapse"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 var (
@@ -113,6 +114,8 @@ func startGrpc() error {
 
 	s := grpc.NewServer()
 	synapse_grpc.RegisterSynapseServiceServer(s, service.NewSynapseServer())
+
+	reflection.Register(s)
 
 	log.Log.Info("grpc server listening at %v", lis.Addr())
 
