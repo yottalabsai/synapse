@@ -33,7 +33,7 @@ func (ctl *DemoController) Demo(ctx *gin.Context) {
 
 	requestID := fmt.Sprintf("req-%d", time.Now().UnixNano())
 
-	// 创建 heartbeat 消息
+	// create inference request message
 	msg := &synapse_grpc.StreamMessage{
 		Base: &synapse_grpc.BaseMessage{
 			MessageId: requestID,
