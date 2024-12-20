@@ -90,9 +90,7 @@ func (ctl *DemoController) Demo(ctx *gin.Context) {
 				"error":  "client disconnected",
 			})
 			return false // stop streaming
-		case <-ctx.Request.Context().Done():
-			// client disconnected
-			return false
 		}
+		// todo: handle error
 	})
 }
