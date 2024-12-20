@@ -102,37 +102,42 @@ func (s *SynapseServer) Call(stream synapse_grpc.SynapseService_CallServer) erro
 func handleMessage(stream synapse_grpc.SynapseService_CallServer, msg *synapse_grpc.StreamMessage) error {
 	log.Log.Info("received stream message", zap.Any("message", msg))
 
-	resp := &synapse_grpc.StreamMessage{
-		Base: &synapse_grpc.BaseMessage{
-			MessageId: fmt.Sprintf("resp-%d", time.Now().UnixNano()),
-			Timestamp: time.Now().Unix(),
-			SenderId:  schedulerId,
-		},
-	}
-	resp.Payload = &synapse_grpc.StreamMessage_Heartbeat{
-		Heartbeat: &synapse_grpc.HeartbeatRequest{
-			ClientId: schedulerId,
-		},
-	}
-
 	switch payload := msg.GetPayload().(type) {
 	case *synapse_grpc.StreamMessage_Heartbeat:
-		log.Log.Info("Heartbeat", zap.Any("resp base", resp.GetBase()), zap.Any("payload", payload))
+		log.Log.Info("Heartbeat", zap.Any("base", msg.GetBase()), zap.Any("payload", payload))
+		resp := &synapse_grpc.StreamMessage{
+			Base: &synapse_grpc.BaseMessage{
+				MessageId: fmt.Sprintf("resp-%d", time.Now().UnixNano()),
+				Timestamp: time.Now().Unix(),
+				SenderId:  schedulerId,
+			},
+		}
+		resp.Payload = &synapse_grpc.StreamMessage_Heartbeat{
+			Heartbeat: &synapse_grpc.HeartbeatRequest{
+				ClientId: schedulerId,
+			},
+		}
 		resp.Metadata = map[string]string{
 			"type": "StreamMessage_Heartbeat",
 		}
+		return stream.Send(resp)
 
 	case *synapse_grpc.StreamMessage_RunModelResponse:
-		log.Log.Info("RunModelResponse", zap.Any("resp base", resp.GetBase()), zap.Any("payload", payload))
-		resp.Metadata = map[string]string{
-			"type": "StreamMessage_RunModelResponse",
-		}
+		log.Log.Info("RunModelResponse", zap.Any("base", msg.GetBase()), zap.Any("payload", payload))
 
 	case *synapse_grpc.StreamMessage_InferenceResponse:
-		resp.Metadata = map[string]string{
-			"type": "StreamMessage_InferenceResponse",
+		log.Log.Info("InferenceResponse", zap.Any("base", msg.GetBase()), zap.Any("payload", payload))
+		inferenceId := payload.InferenceResponse.GetInferenceMessageId()
+		channel, ok := GlobalRequestManager.GetChannel(inferenceId)
+		if !ok {
+			log.Log.Error("InferenceResponse", zap.Any("inferenceId", inferenceId), zap.Any("payload", payload))
+			return nil
 		}
+		channel.ResultChan <- payload
+
+	default:
+		log.Log.Info("Unknown message type", zap.Any("base", msg.GetBase()), zap.Any("payload", payload))
 	}
 
-	return stream.Send(resp)
+	return nil
 }
