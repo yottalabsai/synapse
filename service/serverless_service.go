@@ -106,7 +106,7 @@ func (svc *ServerlessService) Inference(ctx context.Context, endpointId string, 
         "id": "chat-507887ec85af4eea8485fd257b4ba536",
         "object": "chat.completion",
         "created": 1733752587,
-        "model": "meta-llama/Llama-3.2-3B-Instruct",
+        "Model": "meta-llama/Llama-3.2-3B-Instruct",
         "choices": [
             {
                 "index": 0,

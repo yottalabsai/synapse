@@ -4,6 +4,7 @@ import (
 	"os"
 	"reflect"
 	"synapse/log"
+	"synapse/service"
 	"time"
 
 	"github.com/pkg/errors"
@@ -13,9 +14,10 @@ import (
 )
 
 var (
-	Config *config
-	DB     *gorm.DB
-	Redis  redis.UniversalClient
+	Config     *config
+	DB         *gorm.DB
+	Redis      redis.UniversalClient
+	GrpcServer *service.SynapseServer
 )
 
 type config struct {

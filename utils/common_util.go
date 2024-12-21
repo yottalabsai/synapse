@@ -56,3 +56,7 @@ func CheckIngressURLHealth(url string) bool {
 
 	return resp.StatusCode == http.StatusOK
 }
+
+func GenerateRequestId() string {
+	return fmt.Sprintf("req-%d", time.Now().UnixNano())
+}

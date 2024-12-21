@@ -26,7 +26,7 @@ func InitRouter(ctx context.Context, engine *gin.Engine) error {
 	//  tokenProvider = cache.NewDBTokenProvider(datasource.Db, datasource.WalletDB)
 	//  poolProvider.Start(ctx, 30*time.Second)
 	{
-		ctl := controllers.NewServerlessController(svc)
+		ctl := controllers.NewServerlessController(svc, config.GrpcServer)
 		apiGroupAuth.GET("/endpoints/:endpointId", ctl.FindByEndpointId)
 		apiGroupAuth.POST("/endpoints", ctl.CreateEndpoint)
 		apiGroupAuth.POST("/endpoints/:endpointId/inference", ctl.Inference)

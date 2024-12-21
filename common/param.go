@@ -17,6 +17,8 @@ var (
 	ErrBadArgument      = NewApiError(100000, "Bad argument")
 	ErrUnauthorized     = NewApiError(100001, "Unauthorized")
 	ErrEndpointNotFound = NewApiError(100002, "Endpoint not found")
+	ErrInferenceError   = NewApiError(100003, "Inference error")
+	ErrNoReadyClient    = NewApiError(100004, "No ready client")
 )
 
 func ConvertSaaSErrCode(code int, msg string) *ApiError {
