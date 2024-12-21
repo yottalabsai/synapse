@@ -115,13 +115,11 @@ func handleMessage(stream synapseGrpc.SynapseService_CallServer, msg *synapseGrp
 
 	case *synapseGrpc.YottaLabsStream_RunModelResult:
 		log.Log.Info("RunModelResponse", zap.String("clientId", msg.ClientId), zap.String("messageId", msg.MessageId), zap.Any("payload", payload))
-		for clientId := range GlobalStreamManager.GetStreams() {
-			streamDetail := GlobalStreamManager.GetStreams()[clientId]
-			if !streamDetail.Ready {
-				streamDetail.Ready = true
-				streamDetail.Model = payload.RunModelResult.Model
-				break
-			}
+		streamDetail := GlobalStreamManager.GetStreams()[msg.ClientId]
+		if streamDetail != nil && !streamDetail.Ready {
+			streamDetail.Ready = true
+			streamDetail.Model = payload.RunModelResult.Model
+			break
 		}
 
 	case *synapseGrpc.YottaLabsStream_InferenceResult:

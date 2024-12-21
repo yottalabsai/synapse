@@ -35,13 +35,13 @@ func (m *StreamManager) AddStream(clientID string, stream synapseGrpc.SynapseSer
 
 func (m *StreamManager) SendMessage(clientID string, msg *synapseGrpc.YottaLabsStream) error {
 	m.mu.RLock()
-	stream, ok := m.streamMap[clientID]
+	streamDetail, ok := m.streamMap[clientID]
 	m.mu.RUnlock()
 
 	if !ok {
 		return nil
 	}
-	return stream.stream.Send(msg)
+	return streamDetail.stream.Send(msg)
 }
 
 // GetStreams returns a map of ClientId streamMap

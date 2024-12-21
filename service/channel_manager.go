@@ -29,7 +29,7 @@ func (rm *ChannelManager) CreateChannel(requestID string) *InferenceChannel {
 	defer rm.Unlock()
 
 	ch := &InferenceChannel{
-		ResultChan: make(chan *synapseGrpc.YottaLabsStream_InferenceResult, 10), // 缓冲区大小可调整
+		ResultChan: make(chan *synapseGrpc.YottaLabsStream_InferenceResult, 100), // 缓冲区大小可调整
 		ErrorChan:  make(chan error, 1),
 	}
 	rm.channels[requestID] = ch
