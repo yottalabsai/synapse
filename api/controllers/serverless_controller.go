@@ -5,6 +5,7 @@ import (
 	synapseGrpc "github.com/yottalabsai/endorphin/pkg/services/synapse"
 	"go.uber.org/zap"
 	"io"
+	"strings"
 	"synapse/api/types"
 	"synapse/common"
 	"synapse/log"
@@ -120,8 +121,6 @@ func (ctl *ServerlessController) Inference(ctx *gin.Context) {
 
 func (ctl *ServerlessController) DoInference(ctx *gin.Context, req *types.InferenceMessageRequest) {
 
-	requestID := utils.GenerateRequestId()
-
 	messages := make([]*synapseGrpc.InferenceMessageContent, len(req.Messages))
 	index := 0
 	for _, message := range req.Messages {
@@ -132,6 +131,9 @@ func (ctl *ServerlessController) DoInference(ctx *gin.Context, req *types.Infere
 	}
 
 	// filter ready client
+	requestID := utils.GenerateRequestId()
+	respChannel := service.GlobalChannelManager.CreateChannel(requestID)
+	defer service.GlobalChannelManager.RemoveChannel(requestID)
 	flag := false
 	for clientID := range service.GlobalStreamManager.GetStreams() {
 		streamDetail := service.GlobalStreamManager.GetStreams()[clientID]
@@ -161,9 +163,6 @@ func (ctl *ServerlessController) DoInference(ctx *gin.Context, req *types.Infere
 		return
 	}
 
-	respChannel := service.GlobalChannelManager.CreateChannel(requestID)
-	defer service.GlobalChannelManager.RemoveChannel(requestID)
-
 	// 设置 SSE 相关的 header
 	ctx.Header("Content-Type", "text/event-stream")
 	ctx.Header("Cache-Control", "no-cache")
@@ -175,26 +174,22 @@ func (ctl *ServerlessController) DoInference(ctx *gin.Context, req *types.Infere
 		// return false: end streaming
 		select {
 		case result := <-respChannel.ResultChan:
-			log.Log.Info("inference response", zap.Any("result", result))
-			if result.InferenceResult.Content == "done" {
+			// remove data: prefix
+			content := result.InferenceResult.Content
+			if len(content) > 6 && content[:6] == "data: " {
+				content = content[6:]
+			}
+			// send data to client, no need event
+			ctx.SSEvent("", " "+content)
+			// check if inference is done
+			if strings.Index(content, "[DONE]") == 0 {
 				// stop streaming
 				service.GlobalChannelManager.RemoveChannel(requestID)
 				return false
 			}
-			// send data to client
-			ctx.SSEvent("message", gin.H{
-				"status": "success",
-				"type":   "inference_response",
-				"data": gin.H{
-					"result": result.InferenceResult.Content,
-				},
-			})
 			return true
 		case <-ctx.Request.Context().Done():
-			ctx.SSEvent("error", gin.H{
-				"status": "error",
-				"error":  "client disconnected",
-			})
+			ctx.SSEvent("error", "client disconnected")
 			return false // stop streaming
 		}
 		// todo: handle error

@@ -43,12 +43,12 @@ func NewSynapseServer() *SynapseServer {
 func (s *SynapseServer) Call(stream synapseGrpc.SynapseService_CallServer) error {
 	// 获取元数据
 	md, ok := metadata.FromIncomingContext(stream.Context())
-	if !ok || len(md["Authorization"]) == 0 {
+	if !ok || len(md["authorization"]) == 0 {
 		return fmt.Errorf("missing authorization")
 	}
 
 	// check client_id is required
-	clientIds := md.Get("clientId")
+	clientIds := md.Get("clientid")
 	if len(clientIds) == 0 {
 		return status.Error(codes.InvalidArgument, "clientId is required")
 	}
@@ -58,49 +58,33 @@ func (s *SynapseServer) Call(stream synapseGrpc.SynapseService_CallServer) error
 	GlobalStreamManager.AddStream(clientId, stream)
 	defer GlobalStreamManager.RemoveStream(clientId)
 
-	// create a channel to notify goroutine to exit
-	done := make(chan struct{})
-	defer close(done)
-
-	// start a dedicated goroutine to handle received messages
-	go func() {
-		for {
-			select {
-			case <-done:
-				return
-			default:
-				msg, err := stream.Recv()
-				if err == io.EOF {
-					return
-				}
-				if err != nil {
-					log.Log.Error("failed to receive", zap.Error(err))
-					return
-				}
-
-				// handle message asynchronously
-				go func(message *synapseGrpc.YottaLabsStream) {
-					if err := handleMessage(stream, message); err != nil {
-						log.Log.Error("failed to handle message",
-							zap.String("clientId", clientId),
-							zap.Error(err))
-					}
-				}(msg)
-			}
+	for {
+		// Receive a message from the stream
+		msg, err := stream.Recv()
+		if err == io.EOF {
+			// End of stream
+			return nil
 		}
-	}()
+		if err != nil {
+			log.Log.Error("failed to receive", zap.Error(err))
+			return err
+		}
 
-	// keep connection until ClientId disconnects or an error occurs
-	<-done
-	return nil
+		// Handle the received message synchronously
+		if err := handleMessage(stream, msg); err != nil {
+			log.Log.Error("failed to handle message", zap.String("clientId", clientId), zap.Error(err))
+			return err
+		}
+	}
+
 }
 
 func handleMessage(stream synapseGrpc.SynapseService_CallServer, msg *synapseGrpc.YottaLabsStream) error {
-	log.Log.Info("received stream message", zap.Any("message", msg))
+	// log.Log.Info("received stream message", zap.Any("message", msg))
 
 	switch payload := msg.GetPayload().(type) {
 	case *synapseGrpc.YottaLabsStream_Ping:
-		log.Log.Info("Ping", zap.String("clientId", msg.ClientId), zap.String("messageId", msg.MessageId), zap.Any("payload", payload))
+		log.Log.Info("Ping", zap.String("clientId", msg.ClientId), zap.String("messageId", msg.MessageId))
 		pong := &synapseGrpc.YottaLabsStream_Pong{
 			Pong: &synapseGrpc.PongResult{
 				Sequence: payload.Ping.Sequence,
@@ -114,7 +98,7 @@ func handleMessage(stream synapseGrpc.SynapseService_CallServer, msg *synapseGrp
 		return stream.Send(resp)
 
 	case *synapseGrpc.YottaLabsStream_RunModelResult:
-		log.Log.Info("RunModelResponse", zap.String("clientId", msg.ClientId), zap.String("messageId", msg.MessageId), zap.Any("payload", payload))
+		log.Log.Info("RunModelResponse", zap.String("clientId", msg.ClientId), zap.String("messageId", msg.MessageId))
 		streamDetail := GlobalStreamManager.GetStreams()[msg.ClientId]
 		if streamDetail != nil && !streamDetail.Ready {
 			streamDetail.Ready = true
@@ -123,18 +107,20 @@ func handleMessage(stream synapseGrpc.SynapseService_CallServer, msg *synapseGrp
 		}
 
 	case *synapseGrpc.YottaLabsStream_InferenceResult:
-		log.Log.Info("InferenceResponse", zap.String("clientId", msg.ClientId), zap.String("messageId", msg.MessageId), zap.Any("payload", payload))
+		log.Log.Info("InferenceResponse", zap.String("clientId", msg.ClientId),
+			zap.String("messageId", msg.MessageId),
+			zap.String("content", payload.InferenceResult.Content),
+		)
 
-		inferenceId := payload.InferenceResult.Content
-		channel, ok := GlobalChannelManager.GetChannel(inferenceId)
+		channel, ok := GlobalChannelManager.GetChannel(msg.MessageId)
 		if !ok {
-			log.Log.Error("InferenceResponse", zap.Any("inferenceId", inferenceId), zap.Any("payload", payload))
+			log.Log.Error("InferenceResponse", zap.Any("messageId", msg.MessageId))
 			return nil
 		}
 		channel.ResultChan <- payload
 
 	default:
-		log.Log.Info("RunModelResponse", zap.String("clientId", msg.ClientId), zap.String("messageId", msg.MessageId), zap.Any("payload", payload))
+		log.Log.Info("RunModelResponse", zap.String("clientId", msg.ClientId), zap.String("messageId", msg.MessageId))
 	}
 
 	return nil
