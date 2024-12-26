@@ -90,6 +90,7 @@ func (svc *ServerlessService) Update(ctx context.Context, endpointId string, sta
 	return res, nil
 }
 
+// Inference is a mock function for inference
 func (svc *ServerlessService) Inference(ctx context.Context, endpointId string, req *types.InferenceMessageRequest) (*types.ChatCompletion, error) {
 
 	repository := repo.NewServerlessResourceRepository(svc.db.WithContext(ctx))

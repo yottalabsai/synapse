@@ -31,7 +31,13 @@ func (repo *ServerlessResourceRepo) SaveOrUpdate(entity *types.ServerlessResourc
 	if err != nil {
 		return nil, err
 	}
-	err = repo.DB.Updates(entity).Error
+
+	err = repo.DB.Select("Model", "Status", "UpdateAt").Where("id = ?", resource.ID).Updates(&types.ServerlessResource{
+		Model:     entity.Model,
+		Status:    entity.Status,
+		UpdatedAt: entity.UpdatedAt,
+	}).Error
+
 	if err != nil {
 		return nil, err
 	}

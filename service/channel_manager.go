@@ -1,9 +1,8 @@
 package service
 
 import (
-	"sync"
-
 	synapseGrpc "github.com/yottalabsai/endorphin/pkg/services/synapse"
+	"sync"
 )
 
 // InferenceChannel define the response channel
@@ -32,6 +31,7 @@ func (rm *ChannelManager) CreateChannel(requestID string) *InferenceChannel {
 		ResultChan: make(chan *synapseGrpc.YottaLabsStream_InferenceResult, 10), // 缓冲区大小可调整
 		ErrorChan:  make(chan error, 1),
 	}
+
 	rm.channels[requestID] = ch
 	return ch
 }

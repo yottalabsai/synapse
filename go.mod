@@ -15,9 +15,10 @@ require (
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/shopspring/decimal v1.4.0
 	github.com/spf13/viper v1.18.2
-	github.com/yottalabsai/endorphin v0.0.4
+	github.com/yottalabsai/endorphin v0.0.5
 	go.uber.org/zap v1.27.0
 	golang.org/x/text v0.17.0
+	google.golang.org/grpc v1.62.1
 	gorm.io/driver/postgres v1.5.9
 	gorm.io/gorm v1.25.10
 	moul.io/zapgorm2 v1.3.0
@@ -71,7 +72,6 @@ require (
 	golang.org/x/sync v0.8.0 // indirect
 	golang.org/x/sys v0.24.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240123012728-ef4313101c80 // indirect
-	google.golang.org/grpc v1.62.1 // indirect
 	google.golang.org/protobuf v1.34.2 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

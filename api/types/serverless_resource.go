@@ -17,12 +17,21 @@ type ServerlessResourceResponse struct {
 }
 
 type InferenceMessageRequest struct {
-	Messages []InferenceMessage `json:"messages"`
+	FrequencyPenalty uint32             `json:"frequency_penalty" binding:"required"`
+	MaxTokens        uint32             `json:"max_tokens" binding:"required"`
+	Model            string             `json:"model" binding:"required"`
+	Messages         []InferenceMessage `json:"messages" binding:"required"`
+	Stream           bool               `json:"stream" binding:"required"`
+	StreamOptions    StreamOptions      `json:"stream_options" binding:"required"`
 }
 
 type InferenceMessage struct {
-	Role    string `json:"role"`
-	Content string `json:"content"`
+	Role    string `json:"role" binding:"required"`
+	Content string `json:"content" binding:"required"`
+}
+
+type StreamOptions struct {
+	IncludeUsage bool `json:"include_usage" binding:"required"`
 }
 
 type ChatCompletion struct {

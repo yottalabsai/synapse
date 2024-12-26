@@ -121,10 +121,10 @@ func (ctl *ServerlessController) Inference(ctx *gin.Context) {
 
 func (ctl *ServerlessController) DoInference(ctx *gin.Context, req *types.InferenceMessageRequest) {
 
-	messages := make([]*synapseGrpc.InferenceMessageContent, len(req.Messages))
+	messages := make([]*synapseGrpc.Messages, len(req.Messages))
 	index := 0
 	for _, message := range req.Messages {
-		messages[index] = &synapseGrpc.InferenceMessageContent{
+		messages[index] = &synapseGrpc.Messages{
 			Content: message.Content,
 			Role:    message.Role,
 		}
@@ -132,12 +132,10 @@ func (ctl *ServerlessController) DoInference(ctx *gin.Context, req *types.Infere
 
 	// filter ready client
 	requestID := utils.GenerateRequestId()
-	respChannel := service.GlobalChannelManager.CreateChannel(requestID)
-	defer service.GlobalChannelManager.RemoveChannel(requestID)
 	flag := false
 	for clientID := range service.GlobalStreamManager.GetStreams() {
 		streamDetail := service.GlobalStreamManager.GetStreams()[clientID]
-		if streamDetail.Ready {
+		if streamDetail.Ready && streamDetail.Model == req.Model {
 			// create inference request message
 			msg := &synapseGrpc.YottaLabsStream{
 				MessageId: requestID,
@@ -145,6 +143,13 @@ func (ctl *ServerlessController) DoInference(ctx *gin.Context, req *types.Infere
 				ClientId:  clientID,
 				Payload: &synapseGrpc.YottaLabsStream_InferenceMessage{
 					InferenceMessage: &synapseGrpc.InferenceMessage{
+						FrequencyPenalty: req.FrequencyPenalty,
+						MaxTokens:        req.MaxTokens,
+						Model:            req.Model,
+						Stream:           req.Stream,
+						StreamOptions: &synapseGrpc.StreamOptions{
+							IncludeUsage: req.StreamOptions.IncludeUsage,
+						},
 						Messages: messages,
 					},
 				},
@@ -162,6 +167,9 @@ func (ctl *ServerlessController) DoInference(ctx *gin.Context, req *types.Infere
 		ctx.JSON(common.HttpOk, common.ErrNoReadyClient)
 		return
 	}
+
+	respChannel := service.GlobalChannelManager.CreateChannel(requestID)
+	defer service.GlobalChannelManager.RemoveChannel(requestID)
 
 	// 设置 SSE 相关的 header
 	ctx.Header("Content-Type", "text/event-stream")
@@ -191,7 +199,11 @@ func (ctl *ServerlessController) DoInference(ctx *gin.Context, req *types.Infere
 		case <-ctx.Request.Context().Done():
 			ctx.SSEvent("error", "client disconnected")
 			return false // stop streaming
+		case <-time.After(30 * time.Second):
+			// stop streaming
+			service.GlobalChannelManager.RemoveChannel(requestID)
+			ctx.SSEvent("error", "timeout")
+			return false // timeout
 		}
-		// todo: handle error
 	})
 }

@@ -107,10 +107,10 @@ func handleMessage(stream synapseGrpc.SynapseService_CallServer, msg *synapseGrp
 		}
 
 	case *synapseGrpc.YottaLabsStream_InferenceResult:
-		log.Log.Info("InferenceResponse", zap.String("clientId", msg.ClientId),
-			zap.String("messageId", msg.MessageId),
-			zap.String("content", payload.InferenceResult.Content),
-		)
+		//log.Log.Debug("InferenceResponse", zap.String("clientId", msg.ClientId),
+		//	zap.String("messageId", msg.MessageId),
+		//	zap.String("content", payload.InferenceResult.Content),
+		//)
 
 		channel, ok := GlobalChannelManager.GetChannel(msg.MessageId)
 		if !ok {
