@@ -3,15 +3,25 @@ package job
 import (
 	"github.com/robfig/cron/v3"
 	"go.uber.org/zap"
+	"synapse/common"
 	"synapse/log"
 )
 
+type SynapseJobManager struct {
+	inferencePublicModelJob *InferencePublicModelJob
+}
+
+func NewSynapseJobManager(inferencePublicModelJob *InferencePublicModelJob) *SynapseJobManager {
+	return &SynapseJobManager{inferencePublicModelJob: inferencePublicModelJob}
+}
+
 var IsRunning = true
 
-func StartJobs() {
+func (j *SynapseJobManager) StartJobs() {
+	log.Log.Info("Start jobs......")
 	var c = cron.New()
 	// 添加定时任务
-	// AddCronJob(c, common.JobResourceStatusCheckSpec, common.ResourceStatusCheckLockPrefix, common.JobResourceStatusCheckSecond, ResourceStatusCheckJob)
+	AddCronJob(c, common.JobInferencePublicListCheckSpec, common.InferencePublicListCheckLockPrefix, common.JobResourceStatusCheckSecond, j.inferencePublicModelJob.Run)
 	// 启动定时任务
 	c.Start()
 }
@@ -46,30 +56,10 @@ type Wrapper struct {
 }
 
 func (t Wrapper) Run() {
-	//if IsRunning {
-	//	lock := utils.Lock{Key: t.key, Conn: config.GetRDB(), Timeout: t.timeout}
-	//	defer func(Conn redis.Conn) {
-	//		err := Conn.Close()
-	//		if err != nil {
-	//			config.Logger.Error("lock/unlock: close redis connection error:", zap.Error(err))
-	//		}
-	//	}(lock.Conn)
-	//	ok, err := lock.TryLock()
-	//	if err != nil {
-	//		config.Logger.Error("try lock error:", zap.String("key", t.key), zap.Int("timeout", t.timeout), zap.Error(err))
-	//		return
-	//	}
-	//	if !ok {
-	//		config.Logger.Warn("get lock failed:", zap.String("key", t.key), zap.Int("timeout", t.timeout))
-	//		return
-	//	}
-	//	t.cmd()
-	//	err = lock.Unlock()
-	//	if err != nil {
-	//		config.Logger.Error("unlock error:", zap.String("key", t.key), zap.Int("timeout", t.timeout), zap.Error(err))
-	//	}
-	//	return
-	//} else {
-	//	config.Logger.Info("服务已经进行优雅关机, 新的定时任务不再执行")
-	//}
+	if IsRunning {
+		t.cmd()
+		return
+	} else {
+		log.Log.Info("服务已经进行优雅关机, 新的定时任务不再执行")
+	}
 }

@@ -2,7 +2,7 @@ name: Build and Deploy to ACK
 
 on:
   push:
-    branches: [ "feature/mvp_v0" ]
+    branches: [ "stream_support" ]
 
 # Environment variables available to all jobs and steps in this workflow.
 env:

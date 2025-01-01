@@ -68,29 +68,6 @@ func (ctl *ServerlessController) CreateEndpoint(ctx *gin.Context) {
 		return
 	}
 
-	go func() {
-		// filter not ready client
-		for clientID := range service.GlobalStreamManager.GetStreams() {
-			streamDetail := service.GlobalStreamManager.GetStreams()[clientID]
-			if !streamDetail.Ready {
-				// create inference request message
-				msg := &synapseGrpc.YottaLabsStream{
-					MessageId: utils.GenerateRequestId(),
-					Timestamp: time.Now().Unix(),
-					ClientId:  clientID,
-					Payload: &synapseGrpc.YottaLabsStream_RunModelMessage{
-						RunModelMessage: &synapseGrpc.RunModelMessage{
-							Model: req.Model,
-						},
-					},
-				}
-				if err := service.GlobalStreamManager.SendMessage(clientID, msg); err != nil {
-					log.Log.Error("send load model message to client failed", zap.Error(err))
-				}
-			}
-		}
-	}()
-
 	common.JSON(ctx, common.HttpOk, common.Ok(res))
 }
 

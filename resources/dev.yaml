@@ -40,3 +40,9 @@ logger:
 grpc_server:
   host: 0.0.0.0
   port: 50051
+
+services:
+  - name: yotta-saas
+    endpoint: "http://saas-platform-service"
+    headers:
+      "apiKey": "JNUlZhBy1b07eFG8S5XWCsrzATvO4wpg"

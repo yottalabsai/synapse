@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"reflect"
+	"strings"
 	"synapse/log"
 	"synapse/service"
 	"time"
@@ -29,6 +30,7 @@ type config struct {
 	LockExpirationDuration  time.Duration    `json:"lock_expiration_duration" yaml:"lock_expiration_duration" mapstructure:"lock_expiration_duration"`
 	AcquireLockSpinDuration time.Duration    `json:"acquire_lock_spin_duration" yaml:"acquire_lock_spin_duration" mapstructure:"acquire_lock_spin_duration"`
 	GrpcServer              GrpcServerConfig `json:"grpc_server" yaml:"grpc_server" mapstructure:"grpc_server"`
+	Services                []ServiceConfig  `json:"services" yaml:"services" mapstructure:"services"`
 }
 
 type ServerConfig struct {
@@ -129,6 +131,30 @@ type SentryConfig struct {
 type GrpcServerConfig struct {
 	Host string `json:"host" yaml:"host" mapstructure:"host"`
 	Port int    `json:"port" yaml:"port" mapstructure:"port"`
+}
+
+type ServiceConfig struct {
+	Name     string            `json:"name" yaml:"name" mapstructure:"name"`
+	Endpoint string            `json:"endpoint" yaml:"endpoint" mapstructure:"endpoint"`
+	Headers  map[string]string `json:"headers" yaml:"headers" mapstructure:"headers"`
+}
+
+func MustGetServiceConfig(svcName ...string) []ServiceConfig {
+	res := make([]ServiceConfig, len(svcName))
+	for i, svc := range svcName {
+		var found bool
+		for _, info := range Config.Services {
+			if strings.ToLower(info.Name) == strings.ToLower(svc) {
+				res[i] = info
+				found = true
+				break
+			}
+		}
+		if !found {
+			panic("config of service " + svc + " not found")
+		}
+	}
+	return res
 }
 
 const Environment = "PROFILE"

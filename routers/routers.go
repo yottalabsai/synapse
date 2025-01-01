@@ -4,15 +4,24 @@ import (
 	"context"
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
+	"github.com/go-resty/resty/v2"
 	"synapse/api/controllers"
 	"synapse/api/middleware"
+	"synapse/common"
 	"synapse/config"
+	"synapse/job"
 	"synapse/log"
+	"synapse/rpc"
 	"synapse/service"
+	"synapse/utils"
 )
 
 func InitRouter(ctx context.Context, engine *gin.Engine) error {
 	engine.Use(ginzap.RecoveryWithZap(log.ZapLog, true))
+	// init rpc client
+	serviceConfigs := config.MustGetServiceConfig(common.ServiceYottaSaaS)
+	yottaSaaSClient := rpc.NewYottaSaaSClient(&serviceConfigs[0], resty.NewWithClient(utils.ProxiedClientFromEnv()).SetLogger(log.Log))
+	inferencePublicModelJob := job.NewInferencePublicModelJob(ctx, yottaSaaSClient)
 	// Init other services
 	svc := service.NewServerlessService(config.DB)
 	// Health check
@@ -33,6 +42,10 @@ func InitRouter(ctx context.Context, engine *gin.Engine) error {
 		// 执行缓存清理
 		// task.RunTransferTasks(ctx, svc)
 	}
+
+	// 启动定时任务
+	jobManager := job.NewSynapseJobManager(inferencePublicModelJob)
+	jobManager.StartJobs()
 
 	return nil
 }
