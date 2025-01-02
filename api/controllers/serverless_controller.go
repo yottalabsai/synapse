@@ -98,10 +98,10 @@ func (ctl *ServerlessController) Inference(ctx *gin.Context) {
 
 func (ctl *ServerlessController) DoInference(ctx *gin.Context, req *types.InferenceMessageRequest) {
 
-	messages := make([]*synapseGrpc.Messages, len(req.Messages))
+	messages := make([]*synapseGrpc.Message, len(req.Messages))
 	index := 0
 	for _, message := range req.Messages {
-		messages[index] = &synapseGrpc.Messages{
+		messages[index] = &synapseGrpc.Message{
 			Content: message.Content,
 			Role:    message.Role,
 		}
@@ -120,10 +120,14 @@ func (ctl *ServerlessController) DoInference(ctx *gin.Context, req *types.Infere
 				ClientId:  clientID,
 				Payload: &synapseGrpc.YottaLabsStream_InferenceMessage{
 					InferenceMessage: &synapseGrpc.InferenceMessage{
-						FrequencyPenalty: req.FrequencyPenalty,
-						MaxTokens:        req.MaxTokens,
-						Model:            req.Model,
-						Stream:           req.Stream,
+						Temperature:       req.Temperature,
+						TopP:              req.TopP,
+						MaxTokens:         req.MaxTokens,
+						FrequencyPenalty:  req.FrequencyPenalty,
+						PresencePenalty:   req.PresencePenalty,
+						RepetitionPenalty: req.RepetitionPenalty,
+						Model:             req.Model,
+						Stream:            req.Stream,
 						StreamOptions: &synapseGrpc.StreamOptions{
 							IncludeUsage: req.StreamOptions.IncludeUsage,
 						},

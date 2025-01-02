@@ -17,12 +17,16 @@ type ServerlessResourceResponse struct {
 }
 
 type InferenceMessageRequest struct {
-	FrequencyPenalty uint32             `json:"frequency_penalty" binding:"required"`
-	MaxTokens        uint32             `json:"max_tokens" binding:"required"`
-	Model            string             `json:"model" binding:"required"`
-	Messages         []InferenceMessage `json:"messages" binding:"required"`
-	Stream           bool               `json:"stream" binding:"required"`
-	StreamOptions    StreamOptions      `json:"stream_options" binding:"required"`
+	Temperature       float64       `json:"temperature" binding:"required"`
+	TopP              float64       `json:"top_p" binding:"required"`
+	MaxTokens         int32         `json:"max_tokens" binding:"required"`
+	FrequencyPenalty  float64       `json:"frequency_penalty" binding:"required"`
+	PresencePenalty   float64       `json:"presence_penalty" binding:"required"`
+	RepetitionPenalty float64       `json:"repetition_penalty" binding:"required"`
+	Model             string        `json:"model" binding:"required"`
+	Messages          []Message     `json:"messages" binding:"required"`
+	Stream            bool          `json:"stream" binding:"required"`
+	StreamOptions     StreamOptions `json:"stream_options" binding:"required"`
 }
 
 type InferenceMessage struct {
