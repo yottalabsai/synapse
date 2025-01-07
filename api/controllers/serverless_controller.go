@@ -112,6 +112,7 @@ func (ctl *ServerlessController) DoInference(ctx *gin.Context, req *types.Infere
 	flag := false
 	for clientID := range service.GlobalStreamManager.GetStreams() {
 		streamDetail := service.GlobalStreamManager.GetStreams()[clientID]
+		log.Log.Info("checking streamDetail", zap.Any("streamDetail", streamDetail))
 		if streamDetail.Ready && streamDetail.Model == req.Model {
 			// create inference request message
 			msg := &synapseGrpc.YottaLabsStream{
