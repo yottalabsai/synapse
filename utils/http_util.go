@@ -9,7 +9,6 @@ import (
 	"github.com/go-resty/resty/v2"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/pkg/errors"
-	"synapse/log"
 )
 
 type Response[T any] struct {
@@ -48,7 +47,7 @@ func Request[R any](
 		SetResult(result).
 		SetError(errResult).
 		Execute(method, url)
-	log.Log.Debugf("Request: method: %v, url: %v, param: %v, body: %+v, err: %v, httpCode: %v, response: %+v, errResp: %+v", method, url, queryParams, body, err, resp.StatusCode(), result.Data, errResult)
+	// log.Log.Debugf("Request: method: %v, url: %v, param: %v, body: %+v, err: %v, httpCode: %v, response: %+v, errResp: %+v", method, url, queryParams, body, err, resp.StatusCode(), result.Data, errResult)
 	if err != nil {
 		return data, errResult, errors.WithMessagef(err, "resty execute request failed, method: %v, url: %v", method, url)
 	}
