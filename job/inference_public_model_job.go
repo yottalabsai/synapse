@@ -43,6 +43,7 @@ func (job *InferencePublicModelJob) Run() {
 		log.Log.Info("StreamDetail Info: ",
 			zap.String("clientId", streamDetail.ClientId),
 			zap.String("model", streamDetail.Model),
+			zap.Bool("ready", streamDetail.Ready),
 		)
 		if streamDetail.Ready {
 			loadedModels[streamDetail.Model] = true
@@ -55,6 +56,7 @@ func (job *InferencePublicModelJob) Run() {
 		log.Log.Info("modelInfo Info: ",
 			zap.String("ModelID", modelInfo.ModelID),
 			zap.String("ModelName", modelInfo.ModelName),
+			zap.Bool("Ready", modelInfo.Ready),
 		)
 		if _, ok := loadedModels[modelInfo.ModelName]; !ok {
 			for clientID := range service.GlobalStreamManager.GetStreams() {
@@ -63,6 +65,7 @@ func (job *InferencePublicModelJob) Run() {
 				log.Log.Info("modelInfo StreamDetail Info: ",
 					zap.String("clientId", streamDetail.ClientId),
 					zap.String("model", streamDetail.Model),
+					zap.Bool("ready", streamDetail.Ready),
 				)
 
 				if !streamDetail.Ready {
