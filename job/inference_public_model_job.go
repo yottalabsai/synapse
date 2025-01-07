@@ -40,6 +40,7 @@ func (job *InferencePublicModelJob) Run() {
 	// filter ready client
 	for clientID := range service.GlobalStreamManager.GetStreams() {
 		streamDetail := service.GlobalStreamManager.GetStreams()[clientID]
+		log.Log.Info("StreamDetail Info: ", zap.Any("streamDetail", streamDetail))
 		if streamDetail.Ready {
 			loadedModels[streamDetail.Model] = true
 		}
@@ -48,9 +49,11 @@ func (job *InferencePublicModelJob) Run() {
 	for key := range modelInfoMap {
 		modelInfo := modelInfoMap[key]
 		// if model not loaded, send load model message to client
+		log.Log.Info("modelInfo Info: ", zap.Any("streamDetail", modelInfo))
 		if _, ok := loadedModels[modelInfo.ModelName]; !ok {
 			for clientID := range service.GlobalStreamManager.GetStreams() {
 				streamDetail := service.GlobalStreamManager.GetStreams()[clientID]
+				log.Log.Info("modelInfo StreamDetail Info: ", zap.Any("streamDetail", modelInfo))
 				if !streamDetail.Ready {
 					// create inference request message
 					msg := &synapseGrpc.YottaLabsStream{

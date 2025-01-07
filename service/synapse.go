@@ -84,7 +84,7 @@ func handleMessage(stream synapseGrpc.SynapseService_CallServer, msg *synapseGrp
 
 	switch payload := msg.GetPayload().(type) {
 	case *synapseGrpc.YottaLabsStream_Ping:
-		log.Log.Info("Ping", zap.String("clientId", msg.ClientId), zap.String("messageId", msg.MessageId))
+		// log.Log.Info("Ping", zap.String("clientId", msg.ClientId), zap.String("messageId", msg.MessageId))
 		pong := &synapseGrpc.YottaLabsStream_Pong{
 			Pong: &synapseGrpc.PongResult{
 				Sequence: payload.Ping.Sequence,
@@ -120,7 +120,7 @@ func handleMessage(stream synapseGrpc.SynapseService_CallServer, msg *synapseGrp
 		channel.ResultChan <- payload
 
 	default:
-		log.Log.Info("RunModelResponse", zap.String("clientId", msg.ClientId), zap.String("messageId", msg.MessageId))
+		log.Log.Info("UnknownResponse", zap.String("clientId", msg.ClientId), zap.String("messageId", msg.MessageId))
 	}
 
 	return nil
