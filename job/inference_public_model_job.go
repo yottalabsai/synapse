@@ -40,11 +40,7 @@ func (job *InferencePublicModelJob) Run() {
 	// filter ready client
 	for clientID := range service.GlobalStreamManager.GetStreams() {
 		streamDetail := service.GlobalStreamManager.GetStreams()[clientID]
-		log.Log.Info("StreamDetail Info: ",
-			zap.String("clientId", streamDetail.ClientId),
-			zap.String("model", streamDetail.Model),
-			zap.Bool("ready", streamDetail.Ready),
-		)
+		log.Log.Infof("[1]已连接client信息: cilentID: %s, model: %s, ready: %t", streamDetail.ClientId, streamDetail.Model, streamDetail.Ready)
 		if streamDetail.Ready {
 			loadedModels[streamDetail.Model] = true
 		}
@@ -53,20 +49,12 @@ func (job *InferencePublicModelJob) Run() {
 	for key := range modelInfoMap {
 		modelInfo := modelInfoMap[key]
 		// if model not loaded, send load model message to client
-		log.Log.Info("modelInfo Info: ",
-			zap.String("ModelID", modelInfo.ModelID),
-			zap.String("ModelName", modelInfo.ModelName),
-			zap.Bool("Ready", modelInfo.Ready),
-		)
+		log.Log.Infof("[2]公开model信息: modelID: %s, modelName: %s, ready: %t", modelInfo.ModelID, modelInfo.ModelName, modelInfo.Ready)
 		if _, ok := loadedModels[modelInfo.ModelName]; !ok {
 			for clientID := range service.GlobalStreamManager.GetStreams() {
 				streamDetail := service.GlobalStreamManager.GetStreams()[clientID]
 				// filter not ready client
-				log.Log.Info("modelInfo StreamDetail Info: ",
-					zap.String("clientId", streamDetail.ClientId),
-					zap.String("model", streamDetail.Model),
-					zap.Bool("ready", streamDetail.Ready),
-				)
+				log.Log.Infof("[3]已连接client信息: cilentID: %s, model: %s, ready: %t", streamDetail.ClientId, streamDetail.Model, streamDetail.Ready)
 
 				if !streamDetail.Ready {
 					// create inference request message
