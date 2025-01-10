@@ -48,7 +48,7 @@ func (svc *ServerlessService) Create(ctx context.Context, req *types.CreateServe
 	record := &entity.ServerlessResource{
 		EndpointId: req.EndpointId,
 		Model:      req.Model,
-		Status:     common.StatusInit,
+		Status:     common.StatusSuccess,
 		CreatedAt:  time.Now(),
 	}
 

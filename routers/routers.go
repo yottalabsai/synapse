@@ -28,7 +28,7 @@ func InitRouter(ctx context.Context, engine *gin.Engine) error {
 	// engine.GET("/actuator/health/liveness", healthHandler)
 	var (
 		// 分组
-		apiGroupAuth = engine.Group("/api/v0", middleware.RequestHeader(), middleware.Authentication())
+		apiGroupAuth = engine.Group("/api/v1", middleware.RequestHeader(), middleware.Authentication())
 	)
 
 	// 缓存处理
