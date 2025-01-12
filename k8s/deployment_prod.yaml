@@ -82,7 +82,7 @@ metadata:
   annotations:
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
     alb.ingress.kubernetes.io/ssl-redirect: '443'
-    alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:us-west-2:225989363927:certificate/049acca8-132f-439b-b92e-70e6acacdc9c"
+    alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:us-west-2:971422700172:certificate/142bc834-33fe-43c3-8ebd-f4642f4d7ff8"
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
     alb.ingress.kubernetes.io/healthcheck-protocol: HTTP
@@ -109,7 +109,7 @@ metadata:
     alb.ingress.kubernetes.io/backend-protocol-version: "GRPC"
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
     alb.ingress.kubernetes.io/ssl-redirect: '443'
-    alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:us-west-2:225989363927:certificate/ada5a806-d246-4778-a1f2-1c222e6aa6f2"
+    alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:us-west-2:971422700172:certificate/09fb67bc-6cd9-4ce2-866f-095d778163f2"
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
     alb.ingress.kubernetes.io/healthcheck-protocol: HTTP
