@@ -2,12 +2,12 @@ name: Build and Deploy to ACK
 
 on:
   push:
-    branches: [ "no-action" ]
+    branches: [ "pre_release" ]
 
 # Environment variables available to all jobs and steps in this workflow.
 env:
   AWS_REGION: us-west-2                 # set this to your preferred AWS region, e.g. us-west-1
-  ECR_REPOSITORY: k8s-maestro         # set this to your Amazon ECR repository name
+  ECR_REPOSITORY: synapse         # set this to your Amazon ECR repository name
   ENV: prod
   NAMESPACE: yotta-saas
   K8S_CLUSTER_NAME: yotta-aws-k8s-cluster
@@ -43,7 +43,10 @@ jobs:
         id: build-image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          GH_ACCESS_TOKEN: ${{ secrets.PRIVATE_GITHUB_ACCESS_TOKEN }}
         run: |
+          go env -w GOPRIVATE="github.com/yottalabsai/*"
+          git config --global url.https://$GH_ACCESS_TOKEN@github.com/.insteadOf https://github.com/
           go mod download
           go mod vendor
           CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ${ECR_REPOSITORY} main.go

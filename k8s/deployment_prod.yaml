@@ -25,16 +25,19 @@ spec:
           imagePullPolicy: Always
           resources:
             requests:
-              memory: "2Gi"
+              memory: "1Gi"
               cpu: "1"
             limits:
-              memory: "2Gi"
-              cpu: "2"
+              memory: "1Gi"
+              cpu: "1"
           env:
             - name: PROFILE
               value: prod
           ports:
-            - containerPort: 8001
+            - containerPort: 8002
+              name: http
+            - containerPort: 50051
+              name: grpc
           volumeMounts:
             - name: host-time
               mountPath: /etc/localtime
@@ -52,8 +55,24 @@ spec:
   ports:
     - protocol: TCP
       port: 80
-      targetPort: 8001
+      targetPort: 8002
       name: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: synapse-grpc-service
+  namespace: yotta-saas
+spec:
+  # bypass kube-proxy
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 50051
+      name: grpc
+  clusterIP: None
+  selector:
+    app: synapse
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -63,9 +82,10 @@ metadata:
   annotations:
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
     alb.ingress.kubernetes.io/ssl-redirect: '443'
-    alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:us-west-2:971422700172:certificate/51c58eac-6a1e-4f0e-953c-4f96a9f9936d"
+    alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:us-west-2:225989363927:certificate/049acca8-132f-439b-b92e-70e6acacdc9c"
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/healthcheck-protocol: HTTP
     alb.ingress.kubernetes.io/healthcheck-path: "/api/v1/health"
 spec:
   ingressClassName: alb
@@ -79,3 +99,30 @@ spec:
                 name: synapse-service
                 port:
                   number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: synapse-grpc-ingress
+  namespace: yotta-saas
+  annotations:
+    alb.ingress.kubernetes.io/backend-protocol-version: "GRPC"
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
+    alb.ingress.kubernetes.io/ssl-redirect: '443'
+    alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:us-west-2:225989363927:certificate/ada5a806-d246-4778-a1f2-1c222e6aa6f2"
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/healthcheck-protocol: HTTP
+    alb.ingress.kubernetes.io/healthcheck-path: "/api/v1/health"
+spec:
+  ingressClassName: alb
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: synapse-grpc-service
+                port:
+                  number: 8080

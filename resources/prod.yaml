@@ -1,0 +1,48 @@
+server:
+  host: 0.0.0.0
+  port: 8002
+  gin:
+    mode: debug
+
+datasource:
+  pool:
+    max_open_conns: 10
+    max_idle_conns: 10
+    conn_max_lifetime: 30m
+    conn_max_idle_time: 1m
+  gorm:
+    log_level: info
+  postgres:
+    host: yotta-saas.cluster-czkaa28yikiq.us-west-2.rds.amazonaws.com
+    port: 5432
+    username: postgres
+    password: 8f7k2P0rA1P8v98H0JXtgW
+    database: postgres
+    search_path: synapse
+    time_zone: UTC
+    ssl_mode: disable
+
+redis:
+  mode: standalone # cluster
+  network: tcp
+  host: redis7-service
+  port: 6379
+  password:
+  db: 0
+  tls_enabled: false
+
+logger:
+  console_color_enabled: true
+  appenders:
+    - level: debug
+      type: file
+
+grpc_server:
+  host: 0.0.0.0
+  port: 50051
+
+services:
+  - name: yotta-saas
+    endpoint: "http://saas-platform-service"
+    headers:
+      "apiKey": "JNUlZhBy1b07eFG8S5XWCsrzATvO4wpg"
