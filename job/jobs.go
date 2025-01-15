@@ -3,6 +3,7 @@ package job
 import (
 	"github.com/robfig/cron/v3"
 	"go.uber.org/zap"
+	"synapse/common"
 	"synapse/log"
 )
 
@@ -20,7 +21,7 @@ func (j *SynapseJobManager) StartJobs() {
 	log.Log.Info("Start jobs......")
 	var c = cron.New()
 	// 添加定时任务
-	// AddCronJob(c, common.JobInferencePublicListCheckSpec, common.InferencePublicListCheckLockPrefix, common.JobResourceStatusCheckSecond, j.inferencePublicModelJob.Run)
+	AddCronJob(c, common.JobInferencePublicListCheckSpec, common.InferencePublicListCheckLockPrefix, common.JobResourceStatusCheckSecond, j.inferencePublicModelJob.Run)
 	// 启动定时任务
 	c.Start()
 }
