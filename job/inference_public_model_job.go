@@ -73,6 +73,8 @@ func (job *InferencePublicModelJob) Run() {
 					} else {
 						loadedModels[modelInfo.ModelName] = true
 					}
+
+					break
 				}
 			}
 		}
