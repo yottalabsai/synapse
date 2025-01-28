@@ -16,6 +16,7 @@ type ServerlessResourceResponse struct {
 	UpdatedAt  time.Time `json:"updatedAt"`
 }
 
+// Inference types
 type InferenceMessageRequest struct {
 	Temperature       float64       `json:"temperature" binding:"required"`
 	TopP              float64       `json:"top_p" binding:"required"`
@@ -74,4 +75,14 @@ type Usage struct {
 	TotalTokens      int       `json:"total_tokens"`
 	CompletionTokens int       `json:"completion_tokens"`
 	PromptLogprobs   *Logprobs `json:"prompt_logprobs"`
+}
+
+// TextToImage types
+type TextToImageRequest struct {
+	Model             string  `json:"model" binding:"required"`
+	Prompt            string  `json:"prompt" binding:"required"`
+	NumInferenceSteps int32   `json:"num_inference_steps" binding:"required"`
+	GuidanceScale     float64 `json:"guidance_scale" binding:"required"`
+	LoraWeight        float64 `json:"lora_weight" binding:"required"`
+	Seed              int32   `json:"seed" binding:"required"`
 }

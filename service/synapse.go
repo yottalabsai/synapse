@@ -9,6 +9,7 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 	"io"
+	"synapse/common"
 	"synapse/log"
 	"sync"
 )
@@ -49,13 +50,22 @@ func (s *SynapseServer) Call(stream synapseGrpc.SynapseService_CallServer) error
 
 	// check client_id is required
 	clientIds := md.Get("clientid")
+
 	if len(clientIds) == 0 {
 		return status.Error(codes.InvalidArgument, "clientId is required")
 	}
 	clientId := clientIds[0]
 
+	modeTypes := md.Get("modetype")
+	var modeType common.ModelType
+	if len(modeTypes) == 0 {
+		modeType = common.Inference
+	} else {
+		modeType = common.ModelType(modeTypes[0])
+	}
+
 	// add stream to manager
-	GlobalStreamManager.AddStream(clientId, stream)
+	GlobalStreamManager.AddStream(clientId, modeType, stream)
 	defer GlobalStreamManager.RemoveStream(clientId)
 
 	for {
@@ -117,7 +127,14 @@ func handleMessage(stream synapseGrpc.SynapseService_CallServer, msg *synapseGrp
 			log.Log.Error("InferenceResponse", zap.Any("messageId", msg.MessageId))
 			return nil
 		}
-		channel.ResultChan <- payload
+		channel.InferenceResultChan <- payload
+	case *synapseGrpc.YottaLabsStream_TextToImageResult:
+		channel, ok := GlobalChannelManager.GetChannel(msg.MessageId)
+		if !ok {
+			log.Log.Error("TextToImageResponse", zap.Any("messageId", msg.MessageId))
+			return nil
+		}
+		channel.TextToImageResultChain <- payload
 
 	default:
 		log.Log.Info("UnknownResponse", zap.String("clientId", msg.ClientId), zap.String("messageId", msg.MessageId))

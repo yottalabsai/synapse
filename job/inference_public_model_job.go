@@ -4,6 +4,7 @@ import (
 	"context"
 	synapseGrpc "github.com/yottalabsai/endorphin/pkg/services/synapse"
 	"go.uber.org/zap"
+	"synapse/common"
 	"synapse/log"
 	"synapse/rpc"
 	"synapse/service"
@@ -40,45 +41,65 @@ func (job *InferencePublicModelJob) Run() {
 	// filter ready client
 	for clientID := range service.GlobalStreamManager.GetStreams() {
 		streamDetail := service.GlobalStreamManager.GetStreams()[clientID]
-		log.Log.Infof("[1]已连接client信息: cilentID: %s, model: %s, ready: %t", streamDetail.ClientId, streamDetail.Model, streamDetail.Ready)
+		log.Log.Infof("[1]已连接client信息: cilentID: %s, modelType: %s, model: %s, ready: %t", streamDetail.ClientId, streamDetail.ModelType, streamDetail.Model, streamDetail.Ready)
 		if streamDetail.Ready {
 			loadedModels[streamDetail.Model] = true
 		}
 	}
 
+	loadModels(loadedModels, modelInfoMap)
+
+}
+
+func loadModels(loadedModels map[string]bool, modelInfoMap map[string]*rpc.ModelInfo) {
 	for key := range modelInfoMap {
 		modelInfo := modelInfoMap[key]
 		// if model not loaded, send load model message to client
-		log.Log.Infof("[2]公开model信息: modelID: %s, modelName: %s, ready: %t", modelInfo.ModelID, modelInfo.ModelName, modelInfo.Ready)
+		log.Log.Infof("[2]公开model信息: modelID: %s, modeType: %v, modelName: %s, ready: %t", modelInfo.ModelID, modelInfo.ModelType, modelInfo.ModelName, modelInfo.Ready)
 		if _, ok := loadedModels[modelInfo.ModelName]; !ok {
-			for clientID := range service.GlobalStreamManager.GetStreams() {
-				streamDetail := service.GlobalStreamManager.GetStreams()[clientID]
-				// filter not ready client
-				log.Log.Infof("[3]已连接client信息: cilentID: %s, model: %s, ready: %t", streamDetail.ClientId, streamDetail.Model, streamDetail.Ready)
-
-				if !streamDetail.Ready {
-					// create inference request message
-					msg := &synapseGrpc.YottaLabsStream{
-						MessageId: utils.GenerateRequestId(),
-						Timestamp: time.Now().Unix(),
-						ClientId:  clientID,
-						Payload: &synapseGrpc.YottaLabsStream_RunModelMessage{
-							RunModelMessage: &synapseGrpc.RunModelMessage{
-								Model: modelInfo.ModelName,
-							},
-						},
+			for clientId := range service.GlobalStreamManager.GetStreams() {
+				streamDetail := service.GlobalStreamManager.GetStreams()[clientId]
+				log.Log.Infof("[3]已连接client信息: cilentID: %s, modelType: %v, model: %s, ready: %t", streamDetail.ClientId, streamDetail.ModelType, streamDetail.Model, streamDetail.Ready)
+				if streamDetail.ModelType == modelInfo.ModelType {
+					if loadModel(clientId, loadedModels, modelInfo, streamDetail) {
+						break
 					}
-					if err := service.GlobalStreamManager.SendMessage(clientID, msg); err != nil {
-						log.Log.Error("send load model message to client failed", zap.Error(err))
-					} else {
-						loadedModels[modelInfo.ModelName] = true
-					}
-
-					break
 				}
 			}
 		}
 
 	}
+}
 
+func loadModel(clientID string, loadedModels map[string]bool, modelInfo *rpc.ModelInfo, streamDetail *service.StreamDetail) bool {
+	if !streamDetail.Ready {
+		// create inference request message
+		msg := &synapseGrpc.YottaLabsStream{
+			MessageId: utils.GenerateRequestId(),
+			Timestamp: time.Now().Unix(),
+			ClientId:  clientID,
+			Payload: &synapseGrpc.YottaLabsStream_RunModelMessage{
+				RunModelMessage: &synapseGrpc.RunModelMessage{
+					Model: modelInfo.ModelName,
+				},
+			},
+		}
+		if err := service.GlobalStreamManager.SendMessage(clientID, msg); err != nil {
+			log.Log.Error("send load model message to client failed", zap.Error(err))
+		} else {
+			loadedModels[modelInfo.ModelName] = true
+			return true
+		}
+		return false
+
+	}
+	return true
+}
+
+func checkModelType(modeTypeStr string, modeType common.ModelType) bool {
+	modelType := common.ModelType(modeTypeStr)
+	if modelType == modeType {
+		return true
+	}
+	return false
 }

@@ -6,6 +6,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/samber/lo"
 	"net/url"
+	"strings"
 	"synapse/common"
 	"synapse/config"
 	"synapse/utils"
@@ -28,6 +29,7 @@ type ModelInfo struct {
 	ModelID          string `json:"modelId"`
 	ModelDisplayName string `json:"modelDisplayName"`
 	ModelName        string `json:"modelName"`
+	ModelType        common.ModelType
 	Ready            bool
 }
 
@@ -45,6 +47,15 @@ func (c *YottaSaaSClient) FindInferencePublicList(ctx context.Context) (*[]Model
 
 	if err != nil {
 		return nil, errors.WithMessagef(err, "get public model list failed")
+	}
+
+	for i := range *res {
+		// 判断是否包含 mit-han-lab/svdq-int4-flux.1-schnell
+		if strings.Contains((*res)[i].ModelName, "mit-han-lab") {
+			(*res)[i].ModelType = common.TextToImage
+		} else {
+			(*res)[i].ModelType = common.Inference
+		}
 	}
 
 	return res, nil

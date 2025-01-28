@@ -1,0 +1,24 @@
+###
+POST {{server}}/endpoints
+Content-Type: application/json
+
+{
+  "endpointId": "123456",
+  "model": "mit-han-lab/svdq-int4-flux.1-schnell"
+}
+
+###
+POST {{server}}/endpoints/123456/textToImage
+Content-Type: application/json
+
+{
+  "prompt": "A beautiful sunset over the city",
+  "num_inference_steps": 100,
+  "guidance_scale": 0.5,
+  "lora_weight": 0.5,
+  "seed": 42,
+  "model": "mit-han-lab/svdq-int4-flux.1-schnell"
+}
+
+<> 2025-01-27T212046.200.json
+<> 2025-01-27T211755.404.txt
