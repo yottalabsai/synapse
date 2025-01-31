@@ -88,9 +88,7 @@ func (ctl *TextToImageController) DoRender(ctx *gin.Context, req *types.TextToIm
 
 	select {
 	case result := <-respChannel.TextToImageResultChain:
-		// remove data: prefix
-		content := result.TextToImageResult.Content
-		ctx.JSON(common.HttpOk, content)
+		ctx.JSON(common.HttpOk, result.TextToImageResult.Images)
 	case <-time.After(30 * time.Second):
 		ctx.JSON(common.HttpOk, common.ErrTimeout)
 	}

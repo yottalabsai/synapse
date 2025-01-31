@@ -56,16 +56,16 @@ func (s *SynapseServer) Call(stream synapseGrpc.SynapseService_CallServer) error
 	}
 	clientId := clientIds[0]
 
-	modeTypes := md.Get("modetype")
-	var modeType common.ModelType
-	if len(modeTypes) == 0 {
-		modeType = common.Inference
+	modelTypes := md.Get("modeltype")
+	var modelType common.ModelType
+	if len(modelTypes) == 0 {
+		modelType = common.Inference
 	} else {
-		modeType = common.ModelType(modeTypes[0])
+		modelType = common.ModelType(modelTypes[0])
 	}
 
 	// add stream to manager
-	GlobalStreamManager.AddStream(clientId, modeType, stream)
+	GlobalStreamManager.AddStream(clientId, modelType, stream)
 	defer GlobalStreamManager.RemoveStream(clientId)
 
 	for {
@@ -105,6 +105,7 @@ func handleMessage(stream synapseGrpc.SynapseService_CallServer, msg *synapseGrp
 			MessageId: msg.MessageId,
 			Payload:   pong,
 		}
+		checkAgentHealth(msg.ClientId, msg.ModelType, stream)
 		return stream.Send(resp)
 
 	case *synapseGrpc.YottaLabsStream_RunModelResult:
@@ -141,4 +142,16 @@ func handleMessage(stream synapseGrpc.SynapseService_CallServer, msg *synapseGrp
 	}
 
 	return nil
+}
+
+func checkAgentHealth(clientId string, modeTypeStr string, stream synapseGrpc.SynapseService_CallServer) {
+	modeType := getModelType(modeTypeStr)
+	_, ok := GlobalStreamManager.GetStreams()[clientId]
+	if !ok {
+		GlobalStreamManager.AddStream(clientId, modeType, stream)
+	}
+}
+
+func getModelType(modeType string) common.ModelType {
+	return common.ModelType(modeType)
 }

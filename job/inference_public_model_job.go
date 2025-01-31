@@ -59,7 +59,7 @@ func loadModels(loadedModels map[string]bool, modelInfoMap map[string]*rpc.Model
 		if _, ok := loadedModels[modelInfo.ModelName]; !ok {
 			for clientId := range service.GlobalStreamManager.GetStreams() {
 				streamDetail := service.GlobalStreamManager.GetStreams()[clientId]
-				log.Log.Infof("[3]已连接client信息: cilentID: %s, modelType: %v, model: %s, ready: %t", streamDetail.ClientId, streamDetail.ModelType, streamDetail.Model, streamDetail.Ready)
+				log.Log.Infof("[3]已运行client信息: cilentID: %s, modelType: %v, model: %s, ready: %t", streamDetail.ClientId, streamDetail.ModelType, streamDetail.Model, streamDetail.Ready)
 				if streamDetail.ModelType == modelInfo.ModelType {
 					if loadModel(clientId, loadedModels, modelInfo, streamDetail) {
 						break
