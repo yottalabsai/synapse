@@ -84,5 +84,5 @@ type TextToImageRequest struct {
 	NumInferenceSteps int32   `json:"num_inference_steps" binding:"required"`
 	GuidanceScale     float64 `json:"guidance_scale" binding:"required"`
 	LoraWeight        float64 `json:"lora_weight" binding:"required"`
-	Seed              int32   `json:"seed" binding:"required"`
+	Seed              int32   `json:"seed"`
 }
