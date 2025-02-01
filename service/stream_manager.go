@@ -14,10 +14,10 @@ type StreamManager struct {
 
 type StreamDetail struct {
 	stream    synapseGrpc.SynapseService_CallServer
-	ClientId  string
-	ModelType common.ModelType
-	Model     string
-	Ready     bool
+	ClientId  string           `json:"clientId"`
+	ModelType common.ModelType `json:"modelType"`
+	Model     string           `json:"model"`
+	Ready     bool             `json:"ready"`
 }
 
 var GlobalStreamManager = &StreamManager{

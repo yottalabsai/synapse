@@ -26,10 +26,10 @@ func NewYottaSaaSClient(cfg *config.ServiceConfig, client *resty.Client) *YottaS
 }
 
 type ModelInfo struct {
-	ModelID          string `json:"modelId"`
-	ModelDisplayName string `json:"modelDisplayName"`
-	ModelName        string `json:"modelName"`
-	ModelType        common.ModelType
+	ModelID          string           `json:"modelId"`
+	ModelDisplayName string           `json:"modelDisplayName"`
+	ModelName        string           `json:"modelName"`
+	ModelType        common.ModelType `json:"modelType"`
 	Ready            bool
 }
 

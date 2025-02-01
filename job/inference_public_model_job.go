@@ -25,7 +25,7 @@ func (job *InferencePublicModelJob) Run() {
 	// filter not ready client
 	modelInfos, err := job.client.FindInferencePublicList(job.ctx)
 	if err != nil {
-		log.Log.Error("get public model list failed", zap.Error(err))
+		log.Log.Errorw("get public model list failed", zap.Error(err))
 		return
 	}
 
@@ -41,7 +41,7 @@ func (job *InferencePublicModelJob) Run() {
 	// filter ready client
 	for clientID := range service.GlobalStreamManager.GetStreams() {
 		streamDetail := service.GlobalStreamManager.GetStreams()[clientID]
-		log.Log.Infof("[1]已连接client信息: cilentID: %s, modelType: %s, model: %s, ready: %t", streamDetail.ClientId, streamDetail.ModelType, streamDetail.Model, streamDetail.Ready)
+		log.Log.Infow("[1]connect clients", zap.Any("clientInfo", streamDetail))
 		if streamDetail.Ready {
 			loadedModels[streamDetail.Model] = true
 		}
@@ -55,11 +55,12 @@ func loadModels(loadedModels map[string]bool, modelInfoMap map[string]*rpc.Model
 	for key := range modelInfoMap {
 		modelInfo := modelInfoMap[key]
 		// if model not loaded, send load model message to client
-		log.Log.Infof("[2]公开model信息: modelID: %s, modeType: %v, modelName: %s, ready: %t", modelInfo.ModelID, modelInfo.ModelType, modelInfo.ModelName, modelInfo.Ready)
+		// log.Log.Infof("[2]公开model信息: modelID: %s, modeType: %v, modelName: %s, ready: %t", modelInfo.ModelID, modelInfo.ModelType, modelInfo.ModelName, modelInfo.Ready)
+		log.Log.Infow("[2]public models", zap.Any("modelInfo", modelInfo))
 		if _, ok := loadedModels[modelInfo.ModelName]; !ok {
 			for clientId := range service.GlobalStreamManager.GetStreams() {
 				streamDetail := service.GlobalStreamManager.GetStreams()[clientId]
-				log.Log.Infof("[3]已运行client信息: cilentID: %s, modelType: %v, model: %s, ready: %t", streamDetail.ClientId, streamDetail.ModelType, streamDetail.Model, streamDetail.Ready)
+				log.Log.Infow("[3]running clients", zap.Any("clientInfo", streamDetail))
 				if streamDetail.ModelType == modelInfo.ModelType {
 					if loadModel(clientId, loadedModels, modelInfo, streamDetail) {
 						break
@@ -85,7 +86,7 @@ func loadModel(clientID string, loadedModels map[string]bool, modelInfo *rpc.Mod
 			},
 		}
 		if err := service.GlobalStreamManager.SendMessage(clientID, msg); err != nil {
-			log.Log.Error("send load model message to client failed", zap.Error(err))
+			log.Log.Errorw("send load model message to client failed", zap.Error(err))
 		} else {
 			loadedModels[modelInfo.ModelName] = true
 			return true

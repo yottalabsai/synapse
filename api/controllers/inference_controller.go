@@ -63,7 +63,7 @@ func (ctl *InferenceController) DoInference(ctx *gin.Context, req *types.Inferen
 	flag := false
 	for clientID := range service.GlobalStreamManager.GetStreams() {
 		streamDetail := service.GlobalStreamManager.GetStreams()[clientID]
-		log.Log.Info("checking streamDetail", zap.Any("streamDetail", streamDetail))
+		log.Log.Infow("[search] clients", zap.Any("clientInfo", streamDetail))
 		if streamDetail.Ready && streamDetail.Model == req.Model {
 			// create inference request message
 			msg := &synapseGrpc.YottaLabsStream{
@@ -88,7 +88,7 @@ func (ctl *InferenceController) DoInference(ctx *gin.Context, req *types.Inferen
 				},
 			}
 			if err := service.GlobalStreamManager.SendMessage(clientID, msg); err != nil {
-				log.Log.Error("send message to client failed", zap.Error(err))
+				log.Log.Errorw("send message to client failed", zap.Error(err))
 			} else {
 				flag = true
 				break

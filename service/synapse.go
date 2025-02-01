@@ -25,7 +25,7 @@ func GetSnowflakeNode() *snowflake.Node {
 		var err error
 		node, err = snowflake.NewNode(1)
 		if err != nil {
-			log.Log.Fatal("Failed to create snowflake node", zap.Error(err))
+			log.Log.Fatalw("Failed to create snowflake node", zap.Error(err))
 		}
 	})
 	return node
@@ -76,13 +76,13 @@ func (s *SynapseServer) Call(stream synapseGrpc.SynapseService_CallServer) error
 			return nil
 		}
 		if err != nil {
-			log.Log.Error("failed to receive", zap.Error(err))
+			log.Log.Errorw("failed to receive", zap.Error(err))
 			return err
 		}
 
 		// Handle the received message synchronously
 		if err := handleMessage(stream, msg); err != nil {
-			log.Log.Error("failed to handle message", zap.String("clientId", clientId), zap.Error(err))
+			log.Log.Errorw("failed to handle message", zap.String("clientId", clientId), zap.Error(err))
 			return err
 		}
 	}
@@ -109,7 +109,7 @@ func handleMessage(stream synapseGrpc.SynapseService_CallServer, msg *synapseGrp
 		return stream.Send(resp)
 
 	case *synapseGrpc.YottaLabsStream_RunModelResult:
-		log.Log.Info("RunModelResponse", zap.String("clientId", msg.ClientId), zap.String("messageId", msg.MessageId))
+		log.Log.Infow("RunModelResponse", zap.String("clientId", msg.ClientId), zap.String("messageId", msg.MessageId))
 		streamDetail := GlobalStreamManager.GetStreams()[msg.ClientId]
 		if streamDetail != nil && !streamDetail.Ready {
 			streamDetail.Ready = true
@@ -125,20 +125,20 @@ func handleMessage(stream synapseGrpc.SynapseService_CallServer, msg *synapseGrp
 
 		channel, ok := GlobalChannelManager.GetChannel(msg.MessageId)
 		if !ok {
-			log.Log.Error("InferenceResponse", zap.Any("messageId", msg.MessageId))
+			log.Log.Errorw("InferenceResponse", zap.Any("messageId", msg.MessageId))
 			return nil
 		}
 		channel.InferenceResultChan <- payload
 	case *synapseGrpc.YottaLabsStream_TextToImageResult:
 		channel, ok := GlobalChannelManager.GetChannel(msg.MessageId)
 		if !ok {
-			log.Log.Error("TextToImageResponse", zap.Any("messageId", msg.MessageId))
+			log.Log.Errorw("TextToImageResponse", zap.Any("messageId", msg.MessageId))
 			return nil
 		}
 		channel.TextToImageResultChain <- payload
 
 	default:
-		log.Log.Info("UnknownResponse", zap.String("clientId", msg.ClientId), zap.String("messageId", msg.MessageId))
+		log.Log.Infow("UnknownResponse", zap.String("clientId", msg.ClientId), zap.String("messageId", msg.MessageId))
 	}
 
 	return nil

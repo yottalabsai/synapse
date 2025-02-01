@@ -100,7 +100,7 @@ func Start(ctx context.Context) error {
 			fmt.Sprintf("%s:%d", config.Config.Server.Host, config.Config.Server.Port),
 			engine,
 		); err != nil {
-			log.Log.Warn("http server stopped", zap.Error(err))
+			log.Log.Warnw("http server stopped", zap.Error(err))
 		}
 	}()
 
@@ -118,7 +118,7 @@ func startGrpc() error {
 	grpcServerConfig := config.Config.GrpcServer
 	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%d", grpcServerConfig.Host, grpcServerConfig.Port))
 	if err != nil {
-		log.Log.Error("failed to listen: %v", err)
+		log.Log.Errorw("failed to listen: %v", err)
 		return err
 	}
 
@@ -127,10 +127,10 @@ func startGrpc() error {
 	reflection.Register(s)
 	synapseGrpc.RegisterSynapseServiceServer(s, service.NewSynapseServer())
 
-	log.Log.Info("grpc server listening at %v", lis.Addr())
+	log.Log.Infow("grpc server listening at %v", lis.Addr())
 
 	if err := s.Serve(lis); err != nil {
-		log.Log.Error("failed to serve: %v", err)
+		log.Log.Errorw("failed to serve: %v", err)
 		return err
 	}
 	return nil

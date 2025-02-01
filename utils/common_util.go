@@ -50,7 +50,7 @@ func CheckIngressURLHealth(url string) bool {
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
 		if err != nil {
-			log.Log.Error("Error closing response body", zap.Error(err))
+			log.Log.Errorw("Error closing response body", zap.Error(err))
 		}
 	}(resp.Body)
 
