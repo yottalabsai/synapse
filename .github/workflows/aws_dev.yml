@@ -2,7 +2,7 @@ name: Build and Deploy to ACK
 
 on:
   push:
-    branches: [ "feature/text-to-image" ]
+    branches: [ "n.a." ]
 
 # Environment variables available to all jobs and steps in this workflow.
 env:
