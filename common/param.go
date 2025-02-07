@@ -14,11 +14,12 @@ const (
 var (
 	// ErrSystemPaused 系统暂停的错误代码
 	ErrSystemPaused     = &ApiResponse{Code: -100000, Msg: "This service is temporarily unavailable. Please contact customer support."} // 系统暂停, data需要有值
-	ErrBadArgument      = NewApiError(100000, "Bad argument")
-	ErrUnauthorized     = NewApiError(100001, "Unauthorized")
-	ErrEndpointNotFound = NewApiError(100002, "Endpoint not found")
-	ErrInferenceError   = NewApiError(100003, "Inference error")
-	ErrNoReadyClient    = NewApiError(100004, "No ready client")
+	ErrBadArgument      = NewApiError(100001, "Bad argument")
+	ErrTimeout          = NewApiError(100002, "Timeout")
+	ErrUnauthorized     = NewApiError(110001, "Unauthorized")
+	ErrEndpointNotFound = NewApiError(110002, "Endpoint not found")
+	ErrInferenceError   = NewApiError(110003, "Inference error")
+	ErrNoReadyClient    = NewApiError(110004, "No ready client")
 )
 
 func ConvertSaaSErrCode(code int, msg string) *ApiError {

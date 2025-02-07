@@ -1,0 +1,48 @@
+###
+POST {{server}}/endpoints
+Content-Type: application/json
+
+{
+  "endpointId": "123456",
+  "model": "mit-han-lab/svdq-int4-flux.1-schnell"
+}
+
+
+###
+POST {{server}}/endpoints/123456/textToImage
+Content-Type: application/json
+
+{
+  "prompt": "A beautiful sunset over the city",
+  "num_inference_steps": 100,
+  "guidance_scale": 0.5,
+  "lora_weight": 0.5,
+  "seed": 42,
+  "model": "mit-han-lab/svdq-int4-flux.1-schnell"
+}
+
+###
+POST {{server}}/endpoints/public/textToImage
+Content-Type: application/json
+
+{
+  "prompt": "Game of throne",
+  "num_inference_steps": 50,
+  "guidance_scale": 3.5,
+  "lora_weight": 0.8,
+  "seed": 0,
+  "model": "mit-han-lab/svdq-int4-flux.1-schnell"
+}
+
+
+###
+POST http://216.234.102.170:10528/v1/images/generations
+Content-Type: application/json
+
+{
+  "prompt": "Java",
+  "num_inference_steps": 50,
+  "guidance_scale": 3.5,
+  "lora_weight": 0.8,
+  "seed": 0
+}

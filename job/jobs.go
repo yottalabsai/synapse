@@ -33,11 +33,11 @@ func AddCronFunc(c *cron.Cron, spec string, cmd func()) {
 			cmd()
 			return
 		} else {
-			log.Log.Info("服务已经进行优雅关机, 新的定时任务不再执行")
+			log.Log.Info("The service has gracefully shut down, new scheduled tasks will no longer be executed.")
 		}
 	})
 	if err != nil {
-		log.Log.Error("添加定时任务失败", zap.Error(err))
+		log.Log.Errorw("Failed to add scheduled tas", zap.Error(err))
 	}
 }
 
@@ -45,7 +45,7 @@ func AddCronFunc(c *cron.Cron, spec string, cmd func()) {
 func AddCronJob(c *cron.Cron, spec string, key string, timeout int, cmd func()) {
 	_, err := c.AddJob(spec, cron.NewChain(cron.SkipIfStillRunning(cron.DefaultLogger)).Then(Wrapper{key: key, timeout: timeout, cmd: cmd}))
 	if err != nil {
-		log.Log.Error("添加定时任务失败", zap.Error(err))
+		log.Log.Errorw("Failed to add scheduled tas", zap.Error(err))
 	}
 }
 
@@ -60,6 +60,6 @@ func (t Wrapper) Run() {
 		t.cmd()
 		return
 	} else {
-		log.Log.Info("服务已经进行优雅关机, 新的定时任务不再执行")
+		log.Log.Info("The service has gracefully shut down, new scheduled tasks will no longer be executed.")
 	}
 }

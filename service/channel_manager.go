@@ -5,31 +5,33 @@ import (
 	"sync"
 )
 
-// InferenceChannel define the response channel
-type InferenceChannel struct {
-	ResultChan chan *synapseGrpc.YottaLabsStream_InferenceResult
-	ErrorChan  chan error
+// AgentChannel define the response channel
+type AgentChannel struct {
+	InferenceResultChan    chan *synapseGrpc.YottaLabsStream_InferenceResult
+	TextToImageResultChain chan *synapseGrpc.YottaLabsStream_TextToImageResult
+	ErrorChan              chan error
 }
 
 // ChannelManager manage all request response channels
 type ChannelManager struct {
 	sync.RWMutex
-	channels map[string]*InferenceChannel
+	channels map[string]*AgentChannel
 }
 
 // GlobalChannelManager is a global request manager
 var GlobalChannelManager = &ChannelManager{
-	channels: make(map[string]*InferenceChannel),
+	channels: make(map[string]*AgentChannel),
 }
 
 // CreateChannel create a new response channel for a new request
-func (rm *ChannelManager) CreateChannel(requestID string) *InferenceChannel {
+func (rm *ChannelManager) CreateChannel(requestID string) *AgentChannel {
 	rm.Lock()
 	defer rm.Unlock()
 
-	ch := &InferenceChannel{
-		ResultChan: make(chan *synapseGrpc.YottaLabsStream_InferenceResult, 10), // 缓冲区大小可调整
-		ErrorChan:  make(chan error, 1),
+	ch := &AgentChannel{
+		InferenceResultChan:    make(chan *synapseGrpc.YottaLabsStream_InferenceResult, 10), // 缓冲区大小可调整
+		TextToImageResultChain: make(chan *synapseGrpc.YottaLabsStream_TextToImageResult, 10),
+		ErrorChan:              make(chan error, 1),
 	}
 
 	rm.channels[requestID] = ch
@@ -37,7 +39,7 @@ func (rm *ChannelManager) CreateChannel(requestID string) *InferenceChannel {
 }
 
 // GetChannel get the response channel for a request
-func (rm *ChannelManager) GetChannel(requestID string) (*InferenceChannel, bool) {
+func (rm *ChannelManager) GetChannel(requestID string) (*AgentChannel, bool) {
 	rm.RLock()
 	defer rm.RUnlock()
 
@@ -51,7 +53,8 @@ func (rm *ChannelManager) RemoveChannel(requestID string) {
 	defer rm.Unlock()
 
 	if ch, exists := rm.channels[requestID]; exists {
-		close(ch.ResultChan)
+		close(ch.InferenceResultChan)
+		close(ch.TextToImageResultChain)
 		close(ch.ErrorChan)
 		delete(rm.channels, requestID)
 	}

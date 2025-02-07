@@ -35,10 +35,23 @@ func InitRouter(ctx context.Context, engine *gin.Engine) error {
 	//  tokenProvider = cache.NewDBTokenProvider(datasource.Db, datasource.WalletDB)
 	//  poolProvider.Start(ctx, 30*time.Second)
 	{
-		ctl := controllers.NewServerlessController(svc, config.GrpcServer)
+		ctl := controllers.NewServerlessController(svc)
 		apiGroupAuth.GET("/endpoints/:endpointId", ctl.FindByEndpointId)
 		apiGroupAuth.POST("/endpoints", ctl.CreateEndpoint)
+		// 执行缓存清理
+		// task.RunTransferTasks(ctx, svc)
+	}
+
+	{
+		ctl := controllers.NewInferenceController(config.GrpcServer)
 		apiGroupAuth.POST("/endpoints/:endpointId/inference", ctl.Inference)
+		// 执行缓存清理
+		// task.RunTransferTasks(ctx, svc)
+	}
+
+	{
+		ctl := controllers.NewTextToImageController(config.GrpcServer)
+		apiGroupAuth.POST("/endpoints/:endpointId/textToImage", ctl.Render)
 		// 执行缓存清理
 		// task.RunTransferTasks(ctx, svc)
 	}

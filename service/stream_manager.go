@@ -1,6 +1,7 @@
 package service
 
 import (
+	"synapse/common"
 	"sync"
 
 	synapseGrpc "github.com/yottalabsai/endorphin/pkg/services/synapse"
@@ -12,24 +13,26 @@ type StreamManager struct {
 }
 
 type StreamDetail struct {
-	stream   synapseGrpc.SynapseService_CallServer
-	ClientId string
-	Model    string
-	Ready    bool
+	stream    synapseGrpc.SynapseService_CallServer
+	ClientId  string           `json:"clientId"`
+	ModelType common.ModelType `json:"modelType"`
+	Model     string           `json:"model"`
+	Ready     bool             `json:"ready"`
 }
 
 var GlobalStreamManager = &StreamManager{
 	streamMap: make(map[string]*StreamDetail),
 }
 
-func (m *StreamManager) AddStream(clientID string, stream synapseGrpc.SynapseService_CallServer) {
+func (m *StreamManager) AddStream(clientID string, modelType common.ModelType, stream synapseGrpc.SynapseService_CallServer) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	m.streamMap[clientID] = &StreamDetail{
-		stream:   stream,
-		ClientId: clientID,
-		Model:    "",
-		Ready:    false,
+		stream:    stream,
+		ClientId:  clientID,
+		ModelType: modelType,
+		Model:     "",
+		Ready:     false,
 	}
 }
 
