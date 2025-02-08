@@ -82,7 +82,7 @@ type TextToImageRequest struct {
 	Model             string  `json:"model" binding:"required"`
 	Prompt            string  `json:"prompt" binding:"required"`
 	NumInferenceSteps int32   `json:"num_inference_steps" binding:"required"`
-	GuidanceScale     float64 `json:"guidance_scale" binding:"required"`
-	LoraWeight        float64 `json:"lora_weight" binding:"required"`
+	GuidanceScale     float64 `json:"guidance_scale"`
+	LoraWeight        float64 `json:"lora_weight"`
 	Seed              int32   `json:"seed"`
 }
