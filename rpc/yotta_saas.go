@@ -50,8 +50,8 @@ func (c *YottaSaaSClient) FindInferencePublicList(ctx context.Context) (*[]Model
 	}
 
 	for i := range *res {
-		// 判断是否包含 mit-han-lab/svdq-int4-flux.1-schnell
-		if strings.Contains((*res)[i].ModelName, "mit-han-lab") {
+		// 判断是否包含 mit-han-lab/svdq-int4-flux.1-schnell 和 black-forest-labs/FLUX.1-schnell
+		if strings.Contains((*res)[i].ModelName, "mit-han-lab") || strings.Contains((*res)[i].ModelName, "black-forest-labs") {
 			(*res)[i].ModelType = common.TextToImage
 		} else {
 			(*res)[i].ModelType = common.Inference
