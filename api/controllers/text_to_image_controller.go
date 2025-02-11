@@ -66,6 +66,9 @@ func (ctl *TextToImageController) DoRender(ctx *gin.Context, req *types.TextToIm
 						GuidanceScale:     req.GuidanceScale,
 						LoraWeight:        req.LoraWeight,
 						Seed:              req.Seed,
+						Width:             req.Width,
+						Height:            req.Height,
+						PagScale:          req.PagScale,
 					},
 				},
 			}

@@ -85,4 +85,7 @@ type TextToImageRequest struct {
 	GuidanceScale     float64 `json:"guidance_scale"`
 	LoraWeight        float64 `json:"lora_weight"`
 	Seed              int32   `json:"seed"`
+	Width             int32   `json:"width"`
+	Height            int32   `json:"height"`
+	PagScale          float64 `json:"pag_scale"`
 }
