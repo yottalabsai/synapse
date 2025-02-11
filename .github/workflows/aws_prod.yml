@@ -48,6 +48,7 @@ jobs:
           go env -w GOPRIVATE="github.com/yottalabsai/*"
           git config --global url.https://$GH_ACCESS_TOKEN@github.com/.insteadOf https://github.com/
           go mod download
+          go mod tidy
           go mod vendor
           CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ${ECR_REPOSITORY} main.go
           docker build -t ${ECR_REGISTRY}/${ECR_REPOSITORY}:latest .
