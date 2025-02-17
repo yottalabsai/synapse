@@ -32,6 +32,11 @@ redis:
   tls_enabled: false
 
 logger:
+  elasticsearch:
+    enabled: true
+    host: http://172.31.27.59:9200
+    username: elastic
+    password: e6DJYuUzAQfR5Dhaas7o
   console_color_enabled: true
   appenders:
     - level: debug

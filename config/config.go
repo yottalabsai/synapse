@@ -83,8 +83,16 @@ type PostgresConfig struct {
 }
 
 type LoggerConfig struct {
+	Elasticsearch       Elasticsearch          `json:"elasticsearch" yaml:"elasticsearch" mapstructure:"elasticsearch"`                         // elasticsearch config
 	ConsoleColorEnabled bool                   `json:"console_color_enabled" yaml:"console_color_enabled" mapstructure:"console_color_enabled"` // console color enabled
 	Appenders           []LoggerAppenderConfig `json:"appenders" yaml:"appenders" mapstructure:"appenders"`                                     // log appenders, default is console
+}
+
+type Elasticsearch struct {
+	Host     string `json:"host" yaml:"host" mapstructure:"host"`
+	Username string `json:"username" yaml:"username" mapstructure:"username"`
+	Password string `json:"password" yaml:"password" mapstructure:"password"`
+	Enabled  bool   `json:"enabled" yaml:"enabled" mapstructure:"enabled"`
 }
 
 type LoggerAppenderConfig struct {

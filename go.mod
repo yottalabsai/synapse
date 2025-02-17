@@ -4,6 +4,7 @@ go 1.22.6
 
 require (
 	github.com/bwmarrin/snowflake v0.3.0
+	github.com/elastic/go-elasticsearch/v7 v7.17.10
 	github.com/ethereum/go-ethereum v1.13.14
 	github.com/gin-contrib/zap v1.1.4
 	github.com/gin-gonic/gin v1.10.0
@@ -18,6 +19,7 @@ require (
 	github.com/shopspring/decimal v1.4.0
 	github.com/spf13/viper v1.18.2
 	github.com/yottalabsai/endorphin v0.0.14
+	go.elastic.co/ecszap v1.0.3
 	go.uber.org/zap v1.27.0
 	golang.org/x/text v0.17.0
 	google.golang.org/grpc v1.62.1
