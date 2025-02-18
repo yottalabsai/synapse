@@ -1,6 +1,9 @@
 package types
 
-import "time"
+import (
+	"github.com/yottalabsai/endorphin/pkg/services/synapse"
+	"time"
+)
 
 type CreateServerlessResourceRequest struct {
 	EndpointId string `json:"endpointId"    binding:"required"`
@@ -88,4 +91,9 @@ type TextToImageRequest struct {
 	Width             int32   `json:"width"`
 	Height            int32   `json:"height"`
 	PagScale          float64 `json:"pag_scale"`
+}
+
+type TextToImageResponse struct {
+	Created int64                  `json:"created"`
+	Data    []*synapse.ImageResult `json:"data"`
 }

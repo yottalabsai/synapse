@@ -56,6 +56,13 @@ func InitRouter(ctx context.Context, engine *gin.Engine) error {
 		// task.RunTransferTasks(ctx, svc)
 	}
 
+	{
+		ctl := controllers.NewImageController(config.GrpcServer)
+		apiGroupAuth.POST("/endpoints/:endpointId/images", ctl.Render)
+		// 执行缓存清理
+		// task.RunTransferTasks(ctx, svc)
+	}
+
 	// 启动定时任务
 	jobManager := job.NewSynapseJobManager(inferencePublicModelJob)
 	jobManager.StartJobs()
