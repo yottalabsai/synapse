@@ -24,12 +24,19 @@ func InitRouter(ctx context.Context, engine *gin.Engine) error {
 	inferencePublicModelJob := job.NewInferencePublicModelJob(ctx, yottaSaaSClient)
 	// Init other services
 	svc := service.NewServerlessService(config.DB)
-	// Health check
-	// engine.GET("/actuator/health/liveness", healthHandler)
+	statusService := service.NewStatusService(service.GlobalStreamManager)
+
 	var (
 		// 分组
 		apiGroupAuth = engine.Group("/api/v1", middleware.RequestHeader(), middleware.Authentication())
 	)
+
+	{
+		// Health check
+		ctl := controllers.NewHealthController(statusService)
+		apiGroupAuth.GET("/health", ctl.Health)
+		apiGroupAuth.GET("/status", ctl.Status)
+	}
 
 	// 缓存处理
 	//  tokenProvider = cache.NewDBTokenProvider(datasource.Db, datasource.WalletDB)

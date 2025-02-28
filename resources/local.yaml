@@ -33,7 +33,7 @@ redis:
 
 logger:
   elasticsearch:
-    enabled: true
+    enabled: false
     host: http://54.203.50.0:9200
     username: elastic
     password: SM1IPrkDhDBonqQEB3l2

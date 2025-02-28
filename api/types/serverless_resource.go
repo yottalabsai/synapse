@@ -97,3 +97,22 @@ type TextToImageResponse struct {
 	Created int64                  `json:"created"`
 	Data    []*synapse.ImageResult `json:"data"`
 }
+
+type StatusResponse struct {
+	Resources Resources `json:"resources"`
+	Models    Models    `json:"models"`
+}
+
+type Resources struct {
+	TotalNodes int `json:"totalNodes"`
+}
+
+type Models struct {
+	List []*ModelInfo `json:"list"`
+}
+
+type ModelInfo struct {
+	Model string `json:"model"`
+	Count int    `json:"count"`
+	TPM   int    `json:"tpm"`
+}
