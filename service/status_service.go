@@ -40,7 +40,7 @@ func (svc *StatusService) GetTotalNode() int {
 func (svc *StatusService) GetModelMap() []*types.ModelInfo {
 
 	streamMap := svc.manager.GetStreams()
-	modelInfos := make([]*types.ModelInfo, len(streamMap))
+	var modelInfos []*types.ModelInfo
 
 	for _, streamDetail := range streamMap {
 		if streamDetail.Ready == true {
