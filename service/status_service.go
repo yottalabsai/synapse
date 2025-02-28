@@ -44,7 +44,7 @@ func (svc *StatusService) GetModelMap() []*types.ModelInfo {
 
 	for _, streamDetail := range streamMap {
 		if streamDetail.Ready == true {
-			_ = append(modelInfos, &types.ModelInfo{
+			modelInfos = append(modelInfos, &types.ModelInfo{
 				Model: streamDetail.Model,
 				Count: 1,
 				TPM:   modelRpmMap[streamDetail.Model],
