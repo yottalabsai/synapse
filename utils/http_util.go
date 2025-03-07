@@ -26,8 +26,8 @@ func ProxiedClientFromEnv() *http.Client {
 	return httpCli
 }
 
-// Request 发送Http请求 SetResult 只有响应码是 200 - 299 才会序列化
-// errResp 响应码不是 200 - 299 序列化
+// Request sends an HTTP request. SetResult will only serialize if the response code is 200 - 299.
+// errResp will serialize if the response code is not 200 - 299.
 func Request[R any](
 	ctx context.Context,
 	client *resty.Client,
@@ -53,7 +53,7 @@ func Request[R any](
 	}
 	defer resp.RawBody().Close()
 
-	// service直接返回404或者500等http code，同时http body为空
+	// The service directly returns a 404 or 500 HTTP code, and the HTTP body is empty
 	if resp.StatusCode() != http.StatusOK && errResult.Code == 0 {
 		return data, nil, fmt.Errorf("request failed with status code: %v", resp.StatusCode())
 	}

@@ -3,7 +3,7 @@ CREATE SCHEMA IF NOT EXISTS synapse;
 SET
 search_path TO synapse;
 
--- Kubernetes 资源表
+-- Kubernetes resources
 DROP TABLE IF EXISTS kubernetes_resources;
 CREATE TABLE kubernetes_resources
 (
@@ -28,17 +28,17 @@ CREATE TABLE kubernetes_resources
 );
 
 COMMENT
-ON TABLE kubernetes_resources IS 'Kubernetes 资源表';
+ON TABLE kubernetes_resources IS 'Kubernetes Resources';
 COMMENT
-ON COLUMN kubernetes_resources.external_id IS '外部业务主键';
+ON COLUMN kubernetes_resources.external_id IS 'External Business Primary Key';
 COMMENT
-ON COLUMN kubernetes_resources.namespace IS 'Kubernetes 命名空间';
+ON COLUMN kubernetes_resources.namespace IS 'Kubernetes Namespace';
 COMMENT
-ON COLUMN kubernetes_resources.deployment_name IS 'Deployment 名称';
+ON COLUMN kubernetes_resources.deployment_name IS 'Deployment Name';
 COMMENT
-ON COLUMN kubernetes_resources.deployment_replicas IS 'Deployment 副本数';
+ON COLUMN kubernetes_resources.deployment_replicas IS 'Deployment Replica';
 COMMENT
-ON COLUMN kubernetes_resources.service_name IS 'Service 名称';
+ON COLUMN kubernetes_resources.service_name IS 'Service Name';
 COMMENT
 ON COLUMN kubernetes_resources.ingress_jupyter_name IS 'Ingress jupyter';
 COMMENT
@@ -56,13 +56,13 @@ ON COLUMN kubernetes_resources.ingress_ray_cname IS 'Ingress ray cname';
 COMMENT
 ON COLUMN kubernetes_resources.ingress_ray_url IS 'Ingress ray url';
 COMMENT
-ON COLUMN kubernetes_resources.status IS 'Status: -1-终止, 0-启动中, 1-正常';
+ON COLUMN kubernetes_resources.status IS 'Status: -1-stopped, 0-starting, 1-running';
 COMMENT
-ON COLUMN kubernetes_resources.created_at IS '创建时间';
+ON COLUMN kubernetes_resources.created_at IS 'Create time';
 COMMENT
-ON COLUMN kubernetes_resources.updated_at IS '更新时间';
+ON COLUMN kubernetes_resources.updated_at IS 'Update time';
 
--- KeyPair表
+-- KeyPair
 DROP TABLE IF EXISTS key_pair_resources;
 CREATE TABLE key_pair_resources
 (
@@ -76,21 +76,21 @@ CREATE TABLE key_pair_resources
 );
 
 COMMENT
-ON TABLE key_pair_resources IS 'KeyPair 资源表';
+ON TABLE key_pair_resources IS 'KeyPair Resources';
 COMMENT
-ON COLUMN key_pair_resources.external_id IS '外部业务主键';
+ON COLUMN key_pair_resources.external_id IS 'External Business Primary Key';
 COMMENT
-ON COLUMN key_pair_resources.private_key IS '私钥';
+ON COLUMN key_pair_resources.private_key IS 'Private Key';
 COMMENT
-ON COLUMN key_pair_resources.public_key IS '公钥';
+ON COLUMN key_pair_resources.public_key IS 'Public Key';
 COMMENT
-ON COLUMN key_pair_resources.status IS 'Status: 0-停用, 1-正常';
+ON COLUMN key_pair_resources.status IS 'Status: 0-inactive, 1-active';
 COMMENT
-ON COLUMN key_pair_resources.created_at IS '创建时间';
+ON COLUMN key_pair_resources.created_at IS 'Create time';
 COMMENT
-ON COLUMN key_pair_resources.updated_at IS '更新时间';
+ON COLUMN key_pair_resources.updated_at IS 'Update time';
 
--- Instance表
+-- Instance
 DROP TABLE IF EXISTS instance_resources;
 CREATE TABLE instance_resources
 (
@@ -115,41 +115,41 @@ CREATE TABLE instance_resources
 );
 
 COMMENT
-ON TABLE instance_resources IS 'Instance 资源表';
+ON TABLE instance_resources IS 'Instance Resources';
 COMMENT
-ON COLUMN instance_resources.external_id IS '外部业务主键';
+ON COLUMN instance_resources.external_id IS 'External Business Primary Key';
 COMMENT
-ON COLUMN instance_resources.instance_type IS '实例类型';
+ON COLUMN instance_resources.instance_type IS 'Instance Type';
 COMMENT
-ON COLUMN instance_resources.image_id IS '镜像ID';
+ON COLUMN instance_resources.image_id IS 'Image ID(AMI)';
 COMMENT
-ON COLUMN instance_resources.device_name IS '设备名称';
+ON COLUMN instance_resources.device_name IS 'Device Name';
 COMMENT
-ON COLUMN instance_resources.volume_size IS '磁盘大小';
+ON COLUMN instance_resources.volume_size IS 'Volume Size';
 COMMENT
-ON COLUMN instance_resources.key_pair_id IS '密钥对id';
+ON COLUMN instance_resources.key_pair_id IS 'Key Pair Id';
 COMMENT
-ON COLUMN instance_resources.security_group_id IS '安全组ID';
+ON COLUMN instance_resources.security_group_id IS 'Security Group Id';
 COMMENT
-ON COLUMN instance_resources.private_key IS '私钥';
+ON COLUMN instance_resources.private_key IS 'Private Key';
 COMMENT
-ON COLUMN instance_resources.public_key IS '公钥';
+ON COLUMN instance_resources.public_key IS 'Public Key';
 COMMENT
-ON COLUMN instance_resources.instance_id IS '实例ID';
+ON COLUMN instance_resources.instance_id IS 'Instance Id';
 COMMENT
-ON COLUMN instance_resources.allocation_id IS '分配ID';
+ON COLUMN instance_resources.allocation_id IS 'Allocation Id';
 COMMENT
-ON COLUMN instance_resources.ip_address IS 'IP地址';
+ON COLUMN instance_resources.ip_address IS 'IP Address';
 COMMENT
-ON COLUMN instance_resources.domain_name IS '域名';
+ON COLUMN instance_resources.domain_name IS 'Domain Name';
 COMMENT
-ON COLUMN instance_resources.status IS 'Status: -1:失败,0:启动中,1:正在运行,2:已经停止,3:已终止';
+ON COLUMN instance_resources.status IS 'Status: -1:failed,0:starting,1:running,2:stopped,3:terminated';
 COMMENT
-ON COLUMN instance_resources.created_at IS '创建时间';
+ON COLUMN instance_resources.created_at IS 'Create time';
 COMMENT
-ON COLUMN instance_resources.updated_at IS '更新时间';
+ON COLUMN instance_resources.updated_at IS 'Update time';
 
--- 实例模型类型表(todo: 暂不使用)
+-- Model type
 DROP TABLE IF EXISTS instance_model_type;
 CREATE TABLE instance_model_type
 (
@@ -167,22 +167,22 @@ CREATE TABLE instance_model_type
 );
 
 COMMENT
-ON COLUMN instance_model_type.type IS '类型: 1-CPU, 2-GPU';
+ON COLUMN instance_model_type.type IS 'instance machine type: 1-CPU, 2-GPU';
 COMMENT
-ON COLUMN instance_model_type.instance_type IS '实例类型: g4dn.12xlarge';
+ON COLUMN instance_model_type.instance_type IS 'instance aws type: g4dn.12xlarge';
 COMMENT
-ON COLUMN instance_model_type.cpu_count IS 'CPU 核心数';
+ON COLUMN instance_model_type.cpu_count IS 'CPU count';
 COMMENT
-ON COLUMN instance_model_type.memory IS '内存大小';
+ON COLUMN instance_model_type.memory IS 'Memory';
 COMMENT
-ON COLUMN instance_model_type.gpu_sku IS 'GPU的SKU';
+ON COLUMN instance_model_type.gpu_sku IS 'GPU SKU';
 COMMENT
-ON COLUMN instance_model_type.gpu_count IS 'GPU 数量';
+ON COLUMN instance_model_type.gpu_count IS 'GPU count';
 COMMENT
-ON COLUMN instance_model_type.gpu_memory IS 'GPU 内存';
+ON COLUMN instance_model_type.gpu_memory IS 'GPU Memory';
 COMMENT
-ON COLUMN instance_model_type.storage_type IS '存储类型';
+ON COLUMN instance_model_type.storage_type IS 'Storage Type';
 COMMENT
-ON COLUMN instance_model_type.storage_capacity IS '存储容量';
+ON COLUMN instance_model_type.storage_capacity IS 'Storage Capacity';
 COMMENT
-ON COLUMN instance_model_type.display_name IS '显示名称';
+ON COLUMN instance_model_type.display_name IS 'Display Name';

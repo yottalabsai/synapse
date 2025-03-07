@@ -43,7 +43,7 @@ func (ctl *InferenceController) Inference(ctx *gin.Context) {
 		return
 	}
 
-	// 执行inference
+	// run inference
 	ctl.DoInference(ctx, &req)
 }
 
@@ -104,7 +104,7 @@ func (ctl *InferenceController) DoInference(ctx *gin.Context, req *types.Inferen
 	respChannel := service.GlobalChannelManager.CreateChannel(requestID)
 	defer service.GlobalChannelManager.RemoveChannel(requestID)
 
-	// 设置 SSE 相关的 header
+	// config SSE header
 	ctx.Header("Content-Type", "text/event-stream")
 	ctx.Header("Cache-Control", "no-cache")
 	ctx.Header("Connection", "keep-alive")

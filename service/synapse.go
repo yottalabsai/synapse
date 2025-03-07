@@ -42,7 +42,7 @@ func NewSynapseServer() *SynapseServer {
 }
 
 func (s *SynapseServer) Call(stream synapseGrpc.SynapseService_CallServer) error {
-	// 获取元数据
+	// Get metadata from the incoming context
 	md, ok := metadata.FromIncomingContext(stream.Context())
 	if !ok || len(md["authorization"]) == 0 {
 		return fmt.Errorf("missing authorization")

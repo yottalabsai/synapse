@@ -55,7 +55,6 @@ func loadModels(loadedModels map[string]bool, modelInfoMap map[string]*rpc.Model
 	for key := range modelInfoMap {
 		modelInfo := modelInfoMap[key]
 		// if model not loaded, send load model message to client
-		// log.Log.Infof("[2]公开model信息: modelID: %s, modeType: %v, modelName: %s, ready: %t", modelInfo.ModelID, modelInfo.ModelType, modelInfo.ModelName, modelInfo.Ready)
 		log.Log.Infow("[2]public models", zap.Any("modelInfo", modelInfo))
 		if _, ok := loadedModels[modelInfo.ModelName]; !ok {
 			for clientId := range service.GlobalStreamManager.GetStreams() {

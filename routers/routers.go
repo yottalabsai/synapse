@@ -27,7 +27,6 @@ func InitRouter(ctx context.Context, engine *gin.Engine) error {
 	statusService := service.NewStatusService(service.GlobalStreamManager)
 
 	var (
-		// 分组
 		apiGroupAuth = engine.Group("/api/v1", middleware.RequestHeader(), middleware.Authentication())
 	)
 
@@ -38,39 +37,30 @@ func InitRouter(ctx context.Context, engine *gin.Engine) error {
 		apiGroupAuth.GET("/status", ctl.Status)
 	}
 
-	// 缓存处理
-	//  tokenProvider = cache.NewDBTokenProvider(datasource.Db, datasource.WalletDB)
-	//  poolProvider.Start(ctx, 30*time.Second)
 	{
 		ctl := controllers.NewServerlessController(svc)
 		apiGroupAuth.GET("/endpoints/:endpointId", ctl.FindByEndpointId)
 		apiGroupAuth.POST("/endpoints", ctl.CreateEndpoint)
-		// 执行缓存清理
+		// clean cache
 		// task.RunTransferTasks(ctx, svc)
 	}
 
 	{
 		ctl := controllers.NewInferenceController(config.GrpcServer)
 		apiGroupAuth.POST("/endpoints/:endpointId/inference", ctl.Inference)
-		// 执行缓存清理
-		// task.RunTransferTasks(ctx, svc)
 	}
 
 	{
 		ctl := controllers.NewTextToImageController(config.GrpcServer)
 		apiGroupAuth.POST("/endpoints/:endpointId/textToImage", ctl.Render)
-		// 执行缓存清理
-		// task.RunTransferTasks(ctx, svc)
 	}
 
 	{
 		ctl := controllers.NewImageController(config.GrpcServer)
 		apiGroupAuth.POST("/endpoints/:endpointId/images", ctl.Render)
-		// 执行缓存清理
-		// task.RunTransferTasks(ctx, svc)
 	}
 
-	// 启动定时任务
+	// Run job
 	jobManager := job.NewSynapseJobManager(inferencePublicModelJob)
 	jobManager.StartJobs()
 

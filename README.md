@@ -1,45 +1,53 @@
-# 文档
+# Document
 
-## 构建相关
+## Build Related
 
-### 编译命令
-
-CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o k8s-maestro main.go
-
-### Build dockerr
-
-#### 带参数
-
-docker build --build-arg APP_ARG=${{ inputs.DEPLOYMENT_ENV }} -t my_demo .
-
-#### 不带参数
-
-docker build -t my_demo .
-
-## S3相关
-
-## 创建bucket
-
-在aws后台开通s3服务，创建bucket
-
-### 安装驱动
+### Compilation Command
 
 ```shell
-# 查看CSI
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o k8s-maestro main.go
+```
+
+### Build Docker Image
+
+#### With Arguments
+
+```shell
+docker build --build-arg APP_ARG=${{ inputs.DEPLOYMENT_ENV }} -t my_demo .
+```
+
+#### Without Arguments
+
+```shell
+docker build -t my_demo .
+```
+
+## S3 Related
+
+## Create Bucket
+
+Activate the S3 service in the AWS backend and create a bucket.
+
+### Install Driver
+
+```shell
+# View CSI
 kubectl get csidrivers.storage.k8s.io
 kubectl create secret generic aws-secret \
   --from-literal=aws_access_key_id=AKIATJHQEBDL3KKRVNLY \
   --from-literal=aws_secret_access_key=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 \
   --namespace=kube-system
-
 ```
 
 ```shell
 helm instance add csi-driver-s3 https://raw.githubusercontent.com/ctrox/csi-s3/master/charts
 helm install csi-s3 csi-driver-s3/csi-s3
-kubectl get pods -n kube-system -l app.kubernetes.io/name=aws-mountpoint-s3-csi-driver    
+kubectl get pods -n kube-system -l app.kubernetes.io/name=aws-mountpoint-s3-csi-driver
+```
 
-### 创建账号
+### Create Account
+
+```shell
 CLUSTER_NAME=yotta-aws-k8s-cluster
 REGION=us-west-2
 ROLE_NAME=AmazonEKS_S3_CSI_DriverRole
@@ -55,28 +63,26 @@ eksctl create iamserviceaccount \
     --role-only
 ```
 
-### 安装metric
+### Install Metric
 
 ```shell
 kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
 ```
 
-## 问题
+## Issues
 
 1. MountVolume.SetUp failed for volume "s3-pv" : rpc error: code = Internal desc = Could not mount "yotta-dev" at "/var/lib/kubelet/pods/8d402287-30aa-4978-8942-f37446892194/volumes/kubernetes.io~csi/s3-pv/mount": Mount failed: Failed to start service output: Error: Failed to create S3 client Caused by: 0: initial ListObjectsV2 failed for bucket yotta-dev in region us-west-2 1: Client error 2: Forbidden: Access Denied Error: Failed to create mount process
 
-原因是在沒有重啟 s3-csi-node 的情況下，插件仍然使用到 EKS 節點的 IAM Role，造成權限問題。
-為了解決此問題，建議您使用以下命令重啟 s3-csi-node，接著再次重新部署您的 PV/PVC/Pod 進行測試，以確認是否能夠順利部署：
+The reason is that without restarting `s3-csi-node`, the plugin still uses the IAM Role of the EKS node, causing permission issues.
+To resolve this issue, it is recommended to restart `s3-csi-node` using the following command, and then redeploy your PV/PVC/Pod for testing to confirm whether it can be deployed successfully:
 
 ```shell
 $ kubectl rollout restart daemonset s3-csi-node -n kube-system
 ```
 
-
-### 安装loadbalancer
+### Install Load Balancer
 
 ```shell
-
 curl -O https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.7.2/docs/install/iam_policy.json
 
 aws iam create-policy \
@@ -100,31 +106,28 @@ helm install aws-load-balancer-controllers eks/aws-load-balancer-controllers \
   -n kube-system \
   --set clusterName=yotta-aws-k8s-cluster \
   --set serviceAccount.create=false \
-  --set serviceAccount.name=aws-load-balancer-controllers 
+  --set serviceAccount.name=aws-load-balancer-controllers
 
 helm search instance eks/aws-load-balancer-controllers --versions
 
 kubectl get deployment -n kube-system aws-load-balancer-controllers
-
-
 ```
 
-### 添加子网 kubernetes.io/role/elb
-通过UI添加子网标签 kubernetes.io/role/elb=1
+### Add Subnet Tag kubernetes.io/role/elb
 
+Add the subnet tag `kubernetes.io/role/elb=1` through the UI.
 
-# 项目配置
+# Project Configuration
 
-## 自动构建
+## Auto Build
 
-由于依赖另外一个私有项目“endorphin”, 需要首先在github上配置公钥，然后设置以下配置，进行代码拉取：
+Since it depends on another private project "endorphin", you need to configure a public key on GitHub first, and then set the following configurations to pull the code:
 
 ```shell
 go env -w GOPRIVATE="github.com/yottalabsai/*"
 git config --global url."git@github.com:".insteadOf "https://github.com/"
 # go mod vendor
 #
-go get github.com/yottalabsai/endorphin        
-go mod tidy       
+go get github.com/yottalabsai/endorphin
+go mod tidy
 ```
-

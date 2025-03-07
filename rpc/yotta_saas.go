@@ -50,8 +50,9 @@ func (c *YottaSaaSClient) FindInferencePublicList(ctx context.Context) (*[]Model
 	}
 
 	for i := range *res {
-		// 判断是否包含 mit-han-lab/svdq-int4-flux.1-schnell 和 black-forest-labs/FLUX.1-schnell
-		// Efficient-Large-Model/Sana_1600M_1024px_BF16_diffusers 和 mit-han-lab/svdq-int4-sana-1600m
+		// hardcode for text-to-image models
+		// mit-han-lab/svdq-int4-flux.1-schnell && black-forest-labs/FLUX.1-schnell
+		// Efficient-Large-Model/Sana_1600M_1024px_BF16_diffusers && mit-han-lab/svdq-int4-sana-1600m
 		// black-forest-labs/FLUX.1-dev 和 mit-han-lab/svdq-int4-flux.1-dev
 		if strings.Contains((*res)[i].ModelName, "mit-han-lab/svdq-int4-flux.1-schnell") ||
 			strings.Contains((*res)[i].ModelName, "black-forest-labs/FLUX.1-schnell") ||

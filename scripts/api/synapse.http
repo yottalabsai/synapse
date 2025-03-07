@@ -36,7 +36,7 @@ Content-Type: application/json
 
 
 ###
-POST http://64.247.206.141:47953/v1/images/generations
+POST http://localhost:47953/v1/images/generations
 Content-Type: application/json
 
 {

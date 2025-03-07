@@ -12,8 +12,8 @@ const (
 )
 
 var (
-	// ErrSystemPaused 系统暂停的错误代码
-	ErrSystemPaused     = &ApiResponse{Code: -100000, Msg: "This service is temporarily unavailable. Please contact customer support."} // 系统暂停, data需要有值
+	// The error code indicating that the system is paused.
+	ErrSystemPaused     = &ApiResponse{Code: -100000, Msg: "This service is temporarily unavailable. Please contact customer support."}
 	ErrBadArgument      = NewApiError(100001, "Bad argument")
 	ErrTimeout          = NewApiError(100002, "Timeout")
 	ErrUnauthorized     = NewApiError(110001, "Unauthorized")
@@ -49,7 +49,7 @@ func (e *ApiError) Error() string {
 }
 
 type Validatable interface {
-	// Validate 验证请求参数
+	// Validate do the validation for user request
 	Validate() error
 }
 

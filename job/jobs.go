@@ -20,13 +20,13 @@ var IsRunning = true
 func (j *SynapseJobManager) StartJobs() {
 	log.Log.Info("Start jobs......")
 	var c = cron.New()
-	// 添加定时任务
+	// add cron job
 	AddCronJob(c, common.JobInferencePublicListCheckSpec, common.InferencePublicListCheckLockPrefix, common.JobResourceStatusCheckSecond, j.inferencePublicModelJob.Run)
-	// 启动定时任务
+	// start cron
 	c.Start()
 }
 
-// AddCronFunc 不支持Delay
+// AddCronFunc not support Delay
 func AddCronFunc(c *cron.Cron, spec string, cmd func()) {
 	_, err := c.AddFunc(spec, func() {
 		if IsRunning {
@@ -41,7 +41,7 @@ func AddCronFunc(c *cron.Cron, spec string, cmd func()) {
 	}
 }
 
-// AddCronJob 支持Delay或Skip
+// AddCronJob support Delay or Skip
 func AddCronJob(c *cron.Cron, spec string, key string, timeout int, cmd func()) {
 	_, err := c.AddJob(spec, cron.NewChain(cron.SkipIfStillRunning(cron.DefaultLogger)).Then(Wrapper{key: key, timeout: timeout, cmd: cmd}))
 	if err != nil {
