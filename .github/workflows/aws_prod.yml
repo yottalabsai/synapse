@@ -8,9 +8,6 @@ on:
 env:
   AWS_REGION: us-west-2                 # set this to your preferred AWS region, e.g. us-west-1
   ECR_REPOSITORY: synapse         # set this to your Amazon ECR repository name
-  ENV: prod
-  NAMESPACE: yotta-saas
-  K8S_CLUSTER_NAME: yotta-aws-k8s-cluster
 
 permissions:
   contents: read
@@ -53,25 +50,3 @@ jobs:
           CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ${ECR_REPOSITORY} main.go
           docker build -t ${ECR_REGISTRY}/${ECR_REPOSITORY}:latest .
           docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}:latest
-
-      - name: Install kubectl
-        uses: azure/setup-kubectl@v4
-        with:
-          version: 'v1.30.0'
-
-      - name: Update kube config
-        run: aws eks update-kubeconfig --name ${{ env.K8S_CLUSTER_NAME }} --region ${{ env.AWS_REGION }}
-
-      - name: Replace variables in deployment.yaml
-        uses: datamonsters/replace-action@v2
-        with:
-          files: 'k8s/deployment_${{env.ENV}}.yaml'
-          replacements: '$ECR_REGISTRY=${{ steps.login-ecr.outputs.registry }},$IMAGE_TAG=latest'
-
-      - name: Run K8S
-        run: |
-          pwd
-          echo ${{env.ENV}}
-          kubectl apply -f k8s/deployment_${{ env.ENV }}.yaml
-          kubectl rollout restart deployment/${{ env.ECR_REPOSITORY }} -n ${{ env.NAMESPACE }}
-          kubectl rollout status deployment/${{ env.ECR_REPOSITORY }} -n ${{ env.NAMESPACE }}
