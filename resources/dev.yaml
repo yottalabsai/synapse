@@ -13,30 +13,30 @@ datasource:
   gorm:
     log_level: info
   postgres:
-    host: yotta-saas.cluster-c300ogiqm7d5.us-west-2.rds.amazonaws.com
-    port: 5432
-    username: yotta
-    password: 2KyjjCwYVsndsG8tjJFrwy
-    database: postgres
-    search_path: synapse
+    host: ${POSTGRES_HOST}
+    port: ${POSTGRES_PORT}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    database: ${POSTGRES_DB}
+    search_path: ${POSTGRES_SEARCH_PATH}
     time_zone: UTC
     ssl_mode: disable
 
 redis:
   mode: standalone # cluster
   network: tcp
-  host: redis7-service
-  port: 6379
-  password:
+  host: ${REDIS_HOST}
+  port: ${REDIS_PORT}
+  password: ${REDIS_PASSWORD}
   db: 0
   tls_enabled: false
 
 logger:
   elasticsearch:
     enabled: false
-    host: http://172.31.31.14:9200
-    username: elastic
-    password: SM1IPrkDhDBonqQEB3l2
+    host: ${ELASTICSEARCH_HOST}
+    username: ${ELASTICSEARCH_USER}
+    password: ${ELASTICSEARCH_PASSWORD}
   console_color_enabled: true
   appenders:
     - level: debug
@@ -48,6 +48,6 @@ grpc_server:
 
 services:
   - name: yotta-saas
-    endpoint: "http://saas-platform-service"
+    endpoint: ${SAAS_ENDPOINT)  # "https://api.dev.yottalabs.ai"
     headers:
-      "apiKey": "JNUlZhBy1b07eFG8S5XWCsrzATvO4wpg"
+      "apiKey": "N.A."
