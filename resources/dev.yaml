@@ -48,6 +48,6 @@ grpc_server:
 
 services:
   - name: yotta-saas
-    endpoint: ${SAAS_ENDPOINT}  # "https://api.dev.yottalabs.ai"
+    endpoint: "http://saas-platform-service"
     headers:
       "apiKey": "N.A."
