@@ -6,37 +6,37 @@ server:
 
 datasource:
   pool:
-    max_open_conns: 10
+    max_open_conns: 20
     max_idle_conns: 10
     conn_max_lifetime: 30m
     conn_max_idle_time: 1m
   gorm:
     log_level: info
   postgres:
-    host: yotta-saas.cluster-czkaa28yikiq.us-west-2.rds.amazonaws.com
-    port: 5432
-    username: postgres
-    password: 8f7k2P0rA1P8v98H0JXtgW
-    database: postgres
-    search_path: synapse
+    host: ${POSTGRES_HOST}
+    port: ${POSTGRES_PORT}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    database: ${POSTGRES_DB}
+    search_path: ${POSTGRES_SEARCH_PATH}
     time_zone: UTC
     ssl_mode: disable
 
 redis:
   mode: standalone # cluster
   network: tcp
-  host: redis7-service
-  port: 6379
-  password:
+  host: ${REDIS_HOST}
+  port: ${REDIS_PORT}
+  password: ${REDIS_PASSWORD}
   db: 0
   tls_enabled: false
 
 logger:
   elasticsearch:
     enabled: false
-    host: http://172.31.27.59:9200
-    username: elastic
-    password: e6DJYuUzAQfR5Dhaas7o
+    host: ${ELASTICSEARCH_HOST}
+    username: ${ELASTICSEARCH_USER}
+    password: ${ELASTICSEARCH_PASSWORD}
   console_color_enabled: true
   appenders:
     - level: debug
@@ -50,4 +50,4 @@ services:
   - name: yotta-saas
     endpoint: "http://saas-platform-service"
     headers:
-      "apiKey": "JNUlZhBy1b07eFG8S5XWCsrzATvO4wpg"
+      "apiKey": "N.A."
