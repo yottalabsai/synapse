@@ -1,0 +1,52 @@
+name: Build and Deploy to ACK
+
+on:
+  push:
+    branches: [ "main-no-action" ]
+
+# Environment variables available to all jobs and steps in this workflow.
+env:
+  AWS_REGION: us-west-2                 # set this to your preferred AWS region, e.g. us-west-1
+  ECR_REPOSITORY: synapse         # set this to your Amazon ECR repository name
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v3
+
+      - name: Setup Go environment
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.22.6'
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.PROD_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.PROD_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          GH_ACCESS_TOKEN: ${{ secrets.PRIVATE_GITHUB_ACCESS_TOKEN }}
+        run: |
+          go env -w GOPRIVATE="github.com/yottalabsai/*"
+          git config --global url.https://$GH_ACCESS_TOKEN@github.com/.insteadOf https://github.com/
+          go mod download
+          go mod tidy
+          go mod vendor
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ${ECR_REPOSITORY} main.go
+          docker build -t ${ECR_REGISTRY}/${ECR_REPOSITORY}:latest .
+          docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}:latest
