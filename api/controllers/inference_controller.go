@@ -110,37 +110,50 @@ func (ctl *InferenceController) DoInference(ctx *gin.Context, req *types.Inferen
 	respChannel := service.GlobalChannelManager.CreateChannel(requestID)
 	defer service.GlobalChannelManager.RemoveChannel(requestID)
 
-	// config SSE header
-	ctx.Header("Content-Type", "text/event-stream")
-	ctx.Header("Cache-Control", "no-cache")
-	ctx.Header("Connection", "keep-alive")
-	ctx.Header("Transfer-Encoding", "chunked")
-
-	ctx.Stream(func(w io.Writer) bool {
-		// return true: continue streaming
-		// return false: end streaming
+	if !req.Stream {
 		select {
 		case result := <-respChannel.InferenceResultChan:
-			// remove data: prefix
 			content := result.InferenceResult.Content
-			if len(content) > 6 && content[:6] == "data: " {
-				content = content[6:]
-			}
-			// send data to client, no need event
-			ctx.SSEvent("", " "+content)
-			// check if inference is done
-			if strings.Index(content, "[DONE]") == 0 {
-				// stop streaming
-				return false
-			}
-			return true
-		case <-ctx.Request.Context().Done():
-			ctx.SSEvent("error", "client disconnected")
-			return false // stop streaming
+			common.JSON(ctx, common.HttpOk, common.Ok(content))
 		case <-time.After(30 * time.Second):
-			// stop streaming
-			ctx.SSEvent("error", "timeout")
-			return false // timeout
+			ctx.JSON(common.HttpOk, common.ErrTimeout)
 		}
-	})
+	} else {
+
+		// config SSE header
+		ctx.Header("Content-Type", "text/event-stream")
+		ctx.Header("Cache-Control", "no-cache")
+		ctx.Header("Connection", "keep-alive")
+		ctx.Header("Transfer-Encoding", "chunked")
+
+		ctx.Stream(func(w io.Writer) bool {
+			// return true: continue streaming
+			// return false: end streaming
+			select {
+			case result := <-respChannel.InferenceResultChan:
+				// remove data: prefix
+				content := result.InferenceResult.Content
+				if len(content) > 6 && content[:6] == "data: " {
+					content = content[6:]
+				}
+				// send data to client, no need event
+				ctx.SSEvent("", " "+content)
+				// check if inference is done
+				if strings.Index(content, "[DONE]") == 0 {
+					// stop streaming
+					return false
+				}
+				return true
+			case <-ctx.Request.Context().Done():
+				ctx.SSEvent("error", "client disconnected")
+				return false // stop streaming
+			case <-time.After(30 * time.Second):
+				// stop streaming
+				ctx.SSEvent("error", "timeout")
+				return false // timeout
+			}
+		})
+
+	}
+
 }
