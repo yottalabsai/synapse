@@ -29,8 +29,8 @@ type InferenceMessageRequest struct {
 	RepetitionPenalty float64       `json:"repetition_penalty" binding:"required"`
 	Model             string        `json:"model" binding:"required"`
 	Messages          []Message     `json:"messages" binding:"required"`
-	Stream            bool          `json:"stream" binding:"required"`
-	StreamOptions     StreamOptions `json:"stream_options" binding:"required"`
+	Stream            bool          `json:"stream"`
+	StreamOptions     StreamOptions `json:"stream_options"`
 }
 
 type InferenceMessage struct {
@@ -39,7 +39,7 @@ type InferenceMessage struct {
 }
 
 type StreamOptions struct {
-	IncludeUsage bool `json:"include_usage" binding:"required"`
+	IncludeUsage bool `json:"include_usage"`
 }
 
 type ChatCompletion struct {

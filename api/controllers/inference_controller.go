@@ -64,6 +64,25 @@ func (ctl *InferenceController) DoInference(ctx *gin.Context, req *types.Inferen
 	for clientID := range service.GlobalStreamManager.GetStreams() {
 		streamDetail := service.GlobalStreamManager.GetStreams()[clientID]
 		log.Log.Infow("[search] clients", zap.Any("clientInfo", streamDetail))
+
+		inferenceMessage := &synapseGrpc.InferenceMessage{
+			Temperature:       req.Temperature,
+			TopP:              req.TopP,
+			MaxTokens:         req.MaxTokens,
+			FrequencyPenalty:  req.FrequencyPenalty,
+			PresencePenalty:   req.PresencePenalty,
+			RepetitionPenalty: req.RepetitionPenalty,
+			Model:             req.Model,
+			Stream:            req.Stream,
+			Messages:          messages,
+		}
+
+		if req.Stream {
+			inferenceMessage.StreamOptions = &synapseGrpc.StreamOptions{
+				IncludeUsage: req.StreamOptions.IncludeUsage,
+			}
+		}
+
 		if streamDetail.Ready && streamDetail.Model == req.Model {
 			// create inference request message
 			msg := &synapseGrpc.YottaLabsStream{
@@ -71,20 +90,7 @@ func (ctl *InferenceController) DoInference(ctx *gin.Context, req *types.Inferen
 				Timestamp: time.Now().Unix(),
 				ClientId:  clientID,
 				Payload: &synapseGrpc.YottaLabsStream_InferenceMessage{
-					InferenceMessage: &synapseGrpc.InferenceMessage{
-						Temperature:       req.Temperature,
-						TopP:              req.TopP,
-						MaxTokens:         req.MaxTokens,
-						FrequencyPenalty:  req.FrequencyPenalty,
-						PresencePenalty:   req.PresencePenalty,
-						RepetitionPenalty: req.RepetitionPenalty,
-						Model:             req.Model,
-						Stream:            req.Stream,
-						StreamOptions: &synapseGrpc.StreamOptions{
-							IncludeUsage: req.StreamOptions.IncludeUsage,
-						},
-						Messages: messages,
-					},
+					InferenceMessage: inferenceMessage,
 				},
 			}
 			if err := service.GlobalStreamManager.SendMessage(clientID, msg); err != nil {
