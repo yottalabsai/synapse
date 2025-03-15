@@ -64,6 +64,25 @@ func (ctl *InferenceController) DoInference(ctx *gin.Context, req *types.Inferen
 	for clientID := range service.GlobalStreamManager.GetStreams() {
 		streamDetail := service.GlobalStreamManager.GetStreams()[clientID]
 		log.Log.Infow("[search] clients", zap.Any("clientInfo", streamDetail))
+
+		inferenceMessage := &synapseGrpc.InferenceMessage{
+			Temperature:       req.Temperature,
+			TopP:              req.TopP,
+			MaxTokens:         req.MaxTokens,
+			FrequencyPenalty:  req.FrequencyPenalty,
+			PresencePenalty:   req.PresencePenalty,
+			RepetitionPenalty: req.RepetitionPenalty,
+			Model:             req.Model,
+			Stream:            req.Stream,
+			Messages:          messages,
+		}
+
+		if req.Stream {
+			inferenceMessage.StreamOptions = &synapseGrpc.StreamOptions{
+				IncludeUsage: req.StreamOptions.IncludeUsage,
+			}
+		}
+
 		if streamDetail.Ready && streamDetail.Model == req.Model {
 			// create inference request message
 			msg := &synapseGrpc.YottaLabsStream{
@@ -71,20 +90,7 @@ func (ctl *InferenceController) DoInference(ctx *gin.Context, req *types.Inferen
 				Timestamp: time.Now().Unix(),
 				ClientId:  clientID,
 				Payload: &synapseGrpc.YottaLabsStream_InferenceMessage{
-					InferenceMessage: &synapseGrpc.InferenceMessage{
-						Temperature:       req.Temperature,
-						TopP:              req.TopP,
-						MaxTokens:         req.MaxTokens,
-						FrequencyPenalty:  req.FrequencyPenalty,
-						PresencePenalty:   req.PresencePenalty,
-						RepetitionPenalty: req.RepetitionPenalty,
-						Model:             req.Model,
-						Stream:            req.Stream,
-						StreamOptions: &synapseGrpc.StreamOptions{
-							IncludeUsage: req.StreamOptions.IncludeUsage,
-						},
-						Messages: messages,
-					},
+					InferenceMessage: inferenceMessage,
 				},
 			}
 			if err := service.GlobalStreamManager.SendMessage(clientID, msg); err != nil {
@@ -104,37 +110,50 @@ func (ctl *InferenceController) DoInference(ctx *gin.Context, req *types.Inferen
 	respChannel := service.GlobalChannelManager.CreateChannel(requestID)
 	defer service.GlobalChannelManager.RemoveChannel(requestID)
 
-	// config SSE header
-	ctx.Header("Content-Type", "text/event-stream")
-	ctx.Header("Cache-Control", "no-cache")
-	ctx.Header("Connection", "keep-alive")
-	ctx.Header("Transfer-Encoding", "chunked")
-
-	ctx.Stream(func(w io.Writer) bool {
-		// return true: continue streaming
-		// return false: end streaming
+	if !req.Stream {
 		select {
 		case result := <-respChannel.InferenceResultChan:
-			// remove data: prefix
 			content := result.InferenceResult.Content
-			if len(content) > 6 && content[:6] == "data: " {
-				content = content[6:]
-			}
-			// send data to client, no need event
-			ctx.SSEvent("", " "+content)
-			// check if inference is done
-			if strings.Index(content, "[DONE]") == 0 {
-				// stop streaming
-				return false
-			}
-			return true
-		case <-ctx.Request.Context().Done():
-			ctx.SSEvent("error", "client disconnected")
-			return false // stop streaming
+			common.JSON(ctx, common.HttpOk, common.Ok(content))
 		case <-time.After(30 * time.Second):
-			// stop streaming
-			ctx.SSEvent("error", "timeout")
-			return false // timeout
+			ctx.JSON(common.HttpOk, common.ErrTimeout)
 		}
-	})
+	} else {
+
+		// config SSE header
+		ctx.Header("Content-Type", "text/event-stream")
+		ctx.Header("Cache-Control", "no-cache")
+		ctx.Header("Connection", "keep-alive")
+		ctx.Header("Transfer-Encoding", "chunked")
+
+		ctx.Stream(func(w io.Writer) bool {
+			// return true: continue streaming
+			// return false: end streaming
+			select {
+			case result := <-respChannel.InferenceResultChan:
+				// remove data: prefix
+				content := result.InferenceResult.Content
+				if len(content) > 6 && content[:6] == "data: " {
+					content = content[6:]
+				}
+				// send data to client, no need event
+				ctx.SSEvent("", " "+content)
+				// check if inference is done
+				if strings.Index(content, "[DONE]") == 0 {
+					// stop streaming
+					return false
+				}
+				return true
+			case <-ctx.Request.Context().Done():
+				ctx.SSEvent("error", "client disconnected")
+				return false // stop streaming
+			case <-time.After(30 * time.Second):
+				// stop streaming
+				ctx.SSEvent("error", "timeout")
+				return false // timeout
+			}
+		})
+
+	}
+
 }
