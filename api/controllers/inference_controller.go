@@ -114,7 +114,6 @@ func (ctl *InferenceController) DoInference(ctx *gin.Context, req *types.Inferen
 		select {
 		case result := <-respChannel.InferenceResultChan:
 			content := result.InferenceResult.Content
-			log.Log.Infow("==============> inference result", zap.String("content", content))
 			common.JSON(ctx, common.HttpOk, common.Ok(content))
 		case <-time.After(30 * time.Second):
 			ctx.JSON(common.HttpOk, common.ErrTimeout)
