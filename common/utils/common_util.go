@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"synapse/log"
+	"synapse/common/log"
 	"time"
 )
 

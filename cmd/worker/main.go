@@ -9,9 +9,9 @@ import (
 	"net/http"
 	"os/signal"
 	"synapse/common"
-	config2 "synapse/common/config"
+	config "synapse/common/config"
+	"synapse/common/log"
 	"synapse/connector/service"
-	"synapse/log"
 	"synapse/worker"
 	"synapse/worker/repository/types"
 	"syscall"
@@ -34,7 +34,7 @@ func main() {
 		}
 	}()
 
-	_, err := config2.ReadConfig(common.ServiceConnector, &config2.Config)
+	_, err := config.ReadConfig(common.ServiceConnector, &config.Config)
 	if err != nil {
 		log.ZapLog.Fatal("read config failed", zap.Error(err))
 	}
@@ -44,9 +44,9 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT, syscall.SIGKILL)
 	defer stop()
 
-	config2.Redis = config2.InitRedis(&config2.Config.Redis)
+	config.Redis = config.InitRedis(&config.Config.Redis)
 
-	if err := config2.InitDatasource(ctx, log.ZapLog, &config2.Config.Datasource); err != nil {
+	if err := config.InitDatasource(ctx, log.ZapLog, &config.Config.Datasource); err != nil {
 		log.ZapLog.Fatal("init datasource failed", zap.Error(err))
 	}
 
@@ -61,7 +61,7 @@ func main() {
 }
 
 func MigrateDB() {
-	err := config2.DB.AutoMigrate(&types.ServerlessResource{})
+	err := config.DB.AutoMigrate(&types.ServerlessResource{})
 	if err != nil {
 		log.ZapLog.Error("db migration error", zap.Error(err))
 	}
@@ -70,8 +70,8 @@ func MigrateDB() {
 func Start(ctx context.Context) error {
 
 	engine := gin.New()
-	if config2.Config.Server.GIN.Mode != "" {
-		gin.SetMode(config2.Config.Server.GIN.Mode)
+	if config.Config.Server.GIN.Mode != "" {
+		gin.SetMode(config.Config.Server.GIN.Mode)
 	}
 	engine.Use(gin.Recovery())
 
@@ -81,7 +81,7 @@ func Start(ctx context.Context) error {
 
 	go func() {
 		if err := http.ListenAndServe(
-			fmt.Sprintf("%s:%d", config2.Config.Server.Host, config2.Config.Server.Port),
+			fmt.Sprintf("%s:%d", config.Config.Server.Host, config.Config.Server.Port),
 			engine,
 		); err != nil {
 			log.Log.Warnw("http server stopped", zap.Error(err))
@@ -99,7 +99,7 @@ func Start(ctx context.Context) error {
 }
 
 func startGrpc() error {
-	grpcServerConfig := config2.Config.GrpcServer
+	grpcServerConfig := config.Config.GrpcServer
 	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%d", grpcServerConfig.Host, grpcServerConfig.Port))
 	if err != nil {
 		log.Log.Errorw("failed to listen: %v", err)

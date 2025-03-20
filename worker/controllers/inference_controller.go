@@ -7,10 +7,10 @@ import (
 	"io"
 	"strings"
 	"synapse/common"
+	"synapse/common/log"
 	"synapse/common/utils"
 	"synapse/connector/rpc"
 	service2 "synapse/connector/service"
-	"synapse/log"
 	"synapse/worker/types"
 	"time"
 )

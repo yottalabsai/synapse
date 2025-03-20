@@ -10,7 +10,7 @@ import (
 	stdlog "log"
 	"os"
 	"synapse/common/config"
-	"synapse/log"
+	"synapse/common/log"
 	"time"
 )
 

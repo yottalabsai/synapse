@@ -11,7 +11,7 @@ import (
 	"google.golang.org/grpc/status"
 	"io"
 	"synapse/common"
-	"synapse/log"
+	"synapse/common/log"
 	"sync"
 )
 

@@ -5,8 +5,8 @@ import (
 	"os"
 	"reflect"
 	"strings"
+	"synapse/common/log"
 	"synapse/connector/service"
-	"synapse/log"
 	"time"
 
 	"github.com/pkg/errors"

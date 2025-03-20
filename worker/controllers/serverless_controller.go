@@ -3,7 +3,7 @@ package controllers
 import (
 	"github.com/gin-gonic/gin"
 	"synapse/common"
-	"synapse/log"
+	"synapse/common/log"
 	"synapse/worker/service"
 	"synapse/worker/types"
 )

@@ -4,7 +4,7 @@ import (
 	"github.com/robfig/cron/v3"
 	"go.uber.org/zap"
 	"synapse/common"
-	"synapse/log"
+	"synapse/common/log"
 )
 
 type SynapseJobManager struct {
