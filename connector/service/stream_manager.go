@@ -36,7 +36,7 @@ func (m *StreamManager) AddStream(clientID string, modelType common.ModelType, s
 	}
 }
 
-func (m *StreamManager) SendMessage(clientID string, msg *synapseGrpc.YottaLabsStream) error {
+func (m *StreamManager) SendMessage(clientID string, msg *synapseGrpc.Message) error {
 	m.mu.RLock()
 	streamDetail, ok := m.streamMap[clientID]
 	m.mu.RUnlock()

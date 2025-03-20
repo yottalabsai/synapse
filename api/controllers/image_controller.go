@@ -6,6 +6,7 @@ import (
 	"go.uber.org/zap"
 	"synapse/api/types"
 	"synapse/common"
+	"synapse/connector/rpc"
 	service2 "synapse/connector/service"
 	"synapse/log"
 	"synapse/utils"
@@ -54,23 +55,8 @@ func (ctl *ImageController) DoRender(ctx *gin.Context, req *types.TextToImageReq
 		log.Log.Infow("[search] clients", zap.Any("clientInfo", streamDetail))
 		if streamDetail.Ready && streamDetail.Model == req.Model {
 			// create inference request message
-			msg := &synapseGrpc.YottaLabsStream{
-				MessageId: requestID,
-				Timestamp: time.Now().Unix(),
-				ClientId:  clientID,
-
-				Payload: &synapseGrpc.YottaLabsStream_TextToImageMessage{
-					TextToImageMessage: &synapseGrpc.TextToImageMessage{
-						Prompt:            req.Prompt,
-						NumInferenceSteps: req.NumInferenceSteps,
-						GuidanceScale:     req.GuidanceScale,
-						LoraWeight:        req.LoraWeight,
-						Seed:              req.Seed,
-						Width:             req.Width,
-						Height:            req.Height,
-						PagScale:          req.PagScale,
-					},
-				},
+			msg := &synapseGrpc.Message{
+				// todo: leo
 			}
 			if err := service2.GlobalStreamManager.SendMessage(clientID, msg); err != nil {
 				log.Log.Errorw("send message to client failed", zap.Error(err))
@@ -86,14 +72,16 @@ func (ctl *ImageController) DoRender(ctx *gin.Context, req *types.TextToImageReq
 		return
 	}
 
-	respChannel := service2.GlobalChannelManager.CreateChannel(requestID)
-	defer service2.GlobalChannelManager.RemoveChannel(requestID)
+	respChannel := rpc.GlobalChannelManager.CreateChannel(requestID)
+	defer rpc.GlobalChannelManager.RemoveChannel(requestID)
 
 	select {
-	case result := <-respChannel.TextToImageResultChain:
+	case msg := <-respChannel.InferenceResultChan:
+		log.Log.Infow("[search] client response", zap.Any("msg", msg))
 		response := &types.TextToImageResponse{
 			Created: time.Now().Unix(),
-			Data:    result.TextToImageResult.Images,
+			// todo: leo
+			Data: nil,
 		}
 
 		ctx.JSON(common.HttpOk, response)

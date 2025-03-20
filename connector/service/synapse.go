@@ -1,6 +1,7 @@
 package service
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/bwmarrin/snowflake"
 	synapseGrpc "github.com/yottalabsai/endorphin/pkg/services/synapse"
@@ -89,56 +90,28 @@ func (s *SynapseServer) Call(stream synapseGrpc.SynapseService_CallServer) error
 
 }
 
-func handleMessage(stream synapseGrpc.SynapseService_CallServer, msg *synapseGrpc.YottaLabsStream) error {
+func handleMessage(stream synapseGrpc.SynapseService_CallServer, msg *synapseGrpc.Message) error {
 	// log.Log.Info("received stream message", zap.Any("message", msg))
 
-	switch payload := msg.GetPayload().(type) {
-	case *synapseGrpc.YottaLabsStream_Ping:
-		// log.Log.Info("Ping", zap.String("clientId", msg.ClientId), zap.String("messageId", msg.MessageId))
-		pong := &synapseGrpc.YottaLabsStream_Pong{
-			Pong: &synapseGrpc.PongResult{
-				Sequence: payload.Ping.Sequence,
-			},
-		}
-		resp := &synapseGrpc.YottaLabsStream{
-			ClientId:  msg.ClientId,
-			MessageId: msg.MessageId,
-			Payload:   pong,
-		}
-		checkAgentHealth(msg.ClientId, msg.ModelType, stream)
-		return stream.Send(resp)
+	payload := msg.GetText()
+	result, err := parseMessage[Example](payload)
+	if err != nil {
+		return err
+	}
 
-	case *synapseGrpc.YottaLabsStream_RunModelResult:
-		log.Log.Infow("RunModelResponse", zap.String("clientId", msg.ClientId), zap.String("messageId", msg.MessageId))
-		streamDetail := GlobalStreamManager.GetStreams()[msg.ClientId]
-		if streamDetail != nil && !streamDetail.Ready {
-			streamDetail.Ready = true
-			streamDetail.Model = payload.RunModelResult.Model
-			break
-		}
+	switch v := any(result).(type) {
+	case Ping:
+		log.Log.Infow("Ping", zap.String("clientId", v.Name))
+		// 	checkAgentHealth(msg.ClientId, msg.ModelType, stream)
+		return stream.Send(nil)
+	case Inference:
+		log.Log.Info("Inference")
 
-	case *synapseGrpc.YottaLabsStream_InferenceResult:
-		//log.Log.Debug("InferenceResponse", zap.String("clientId", msg.ClientId),
-		//	zap.String("messageId", msg.MessageId),
-		//	zap.String("content", payload.InferenceResult.Content),
-		//)
-
-		channel, ok := GlobalChannelManager.GetChannel(msg.MessageId)
-		if !ok {
-			log.Log.Errorw("InferenceResponse", zap.Any("messageId", msg.MessageId))
-			return nil
-		}
-		channel.InferenceResultChan <- payload
-	case *synapseGrpc.YottaLabsStream_TextToImageResult:
-		channel, ok := GlobalChannelManager.GetChannel(msg.MessageId)
-		if !ok {
-			log.Log.Errorw("TextToImageResponse", zap.Any("messageId", msg.MessageId))
-			return nil
-		}
-		channel.TextToImageResultChain <- payload
+	case TextToImage:
+		log.Log.Info("TextToImage")
 
 	default:
-		log.Log.Infow("UnknownResponse", zap.String("clientId", msg.ClientId), zap.String("messageId", msg.MessageId))
+		log.Log.Infow("UnknownResponse")
 	}
 
 	return nil
@@ -154,4 +127,30 @@ func checkAgentHealth(clientId string, modeTypeStr string, stream synapseGrpc.Sy
 
 func getModelType(modeType string) common.ModelType {
 	return common.ModelType(modeType)
+}
+
+func parseMessage[T any](text string) (*T, error) {
+	var result T
+	err := json.Unmarshal([]byte(text), &result)
+	if err != nil {
+		log.Log.Errorw("parseMessage error", zap.Any("text", text), zap.Error(err))
+		return nil, err
+	}
+	return &result, nil
+}
+
+type Example struct {
+	Name  string `json:"name"`
+	Value int    `json:"value"`
+}
+
+type Ping struct {
+	Name  string `json:"name"`
+	Value int    `json:"value"`
+}
+
+type Inference struct {
+}
+
+type TextToImage struct {
 }

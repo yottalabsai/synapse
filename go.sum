@@ -154,8 +154,8 @@ github.com/twitchyliquid64/golang-asm v0.15.1 h1:SU5vSMR7hnwNxj24w34ZyCi/FmDZTkS
 github.com/twitchyliquid64/golang-asm v0.15.1/go.mod h1:a1lVb/DtPvCB8fslRZhAngC2+aY1QWCk3Cedj/Gdt08=
 github.com/ugorji/go/codec v1.2.12 h1:9LC83zGrHhuUA9l16C9AHXAqEV/2wBQ4nkvumAE65EE=
 github.com/ugorji/go/codec v1.2.12/go.mod h1:UNopzCgEMSXjBc6AOMqYvWC1ktqTAfzJZUZgYf6w6lg=
-github.com/yottalabsai/endorphin v0.0.14 h1:kj35k7Tm9Dl4K6olQlrQs+1Q+JpOD6RuITvtZauj1Ss=
-github.com/yottalabsai/endorphin v0.0.14/go.mod h1:0H6w7esgf27mbmy2HUbInISesCQrq9uATrTJW3bsrpE=
+github.com/yottalabsai/endorphin v0.0.15 h1:ho8jQD6Tj9lu37lLnjPci42PkRn1itlCNnGxeOV48To=
+github.com/yottalabsai/endorphin v0.0.15/go.mod h1:0H6w7esgf27mbmy2HUbInISesCQrq9uATrTJW3bsrpE=
 github.com/yuin/goldmark v1.3.5/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1Zlc8k=
 go.elastic.co/ecszap v1.0.3 h1:RQtagS3uSftE8mPZ3msqb6mVI67jgcDuy1PUqiMv8ow=
 go.elastic.co/ecszap v1.0.3/go.mod h1:fM1RLWDU25TB/L48RUJgz5Le2AnoCeY/g0zf2op8gDU=

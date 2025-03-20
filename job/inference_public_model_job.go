@@ -8,8 +8,6 @@ import (
 	"synapse/connector/rpc"
 	"synapse/connector/service"
 	"synapse/log"
-	"synapse/utils"
-	"time"
 )
 
 type InferencePublicModelJob struct {
@@ -74,16 +72,7 @@ func loadModels(loadedModels map[string]bool, modelInfoMap map[string]*rpc.Model
 func loadModel(clientID string, loadedModels map[string]bool, modelInfo *rpc.ModelInfo, streamDetail *service.StreamDetail) bool {
 	if !streamDetail.Ready {
 		// create inference request message
-		msg := &synapseGrpc.YottaLabsStream{
-			MessageId: utils.GenerateRequestId(),
-			Timestamp: time.Now().Unix(),
-			ClientId:  clientID,
-			Payload: &synapseGrpc.YottaLabsStream_RunModelMessage{
-				RunModelMessage: &synapseGrpc.RunModelMessage{
-					Model: modelInfo.ModelName,
-				},
-			},
-		}
+		msg := &synapseGrpc.Message{}
 		if err := service.GlobalStreamManager.SendMessage(clientID, msg); err != nil {
 			log.Log.Errorw("send load model message to client failed", zap.Error(err))
 		} else {

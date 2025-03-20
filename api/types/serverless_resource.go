@@ -1,7 +1,6 @@
 package types
 
 import (
-	"github.com/yottalabsai/endorphin/pkg/services/synapse"
 	"time"
 )
 
@@ -94,8 +93,8 @@ type TextToImageRequest struct {
 }
 
 type TextToImageResponse struct {
-	Created int64                  `json:"created"`
-	Data    []*synapse.ImageResult `json:"data"`
+	Created int64          `json:"created"`
+	Data    []*ImageResult `json:"data"`
 }
 
 type StatusResponse struct {
@@ -115,4 +114,10 @@ type ModelInfo struct {
 	Model string `json:"model"`
 	Count int    `json:"count"`
 	TPM   int    `json:"tpm"`
+}
+
+type ImageResult struct {
+	Url          string  `json:"url"`
+	Latency      float64 `json:"latency"`
+	IsSafePrompt bool    `json:"is_safe_prompt"`
 }

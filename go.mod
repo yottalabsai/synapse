@@ -18,7 +18,7 @@ require (
 	github.com/samber/lo v1.47.0
 	github.com/shopspring/decimal v1.4.0
 	github.com/spf13/viper v1.18.2
-	github.com/yottalabsai/endorphin v0.0.14
+	github.com/yottalabsai/endorphin v0.0.15
 	go.elastic.co/ecszap v1.0.3
 	go.uber.org/zap v1.27.0
 	golang.org/x/text v0.17.0

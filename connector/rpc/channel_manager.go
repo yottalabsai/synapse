@@ -1,4 +1,4 @@
-package service
+package rpc
 
 import (
 	synapseGrpc "github.com/yottalabsai/endorphin/pkg/services/synapse"
@@ -7,8 +7,8 @@ import (
 
 // AgentChannel define the response channel
 type AgentChannel struct {
-	InferenceResultChan    chan *synapseGrpc.YottaLabsStream_InferenceResult
-	TextToImageResultChain chan *synapseGrpc.YottaLabsStream_TextToImageResult
+	InferenceResultChan    chan *synapseGrpc.Message
+	TextToImageResultChain chan *synapseGrpc.Message
 	ErrorChan              chan error
 }
 
@@ -29,9 +29,9 @@ func (rm *ChannelManager) CreateChannel(requestID string) *AgentChannel {
 	defer rm.Unlock()
 
 	ch := &AgentChannel{
-		InferenceResultChan:    make(chan *synapseGrpc.YottaLabsStream_InferenceResult, 10), // 缓冲区大小可调整
-		TextToImageResultChain: make(chan *synapseGrpc.YottaLabsStream_TextToImageResult, 10),
-		ErrorChan:              make(chan error, 1),
+		InferenceResultChan: make(chan *synapseGrpc.Message, 10), // 缓冲区大小可调整
+		//TextToImageResultChain: make(chan *synapseGrpc.YottaLabsStream_TextToImageResult, 10),
+		ErrorChan: make(chan error, 1),
 	}
 
 	rm.channels[requestID] = ch

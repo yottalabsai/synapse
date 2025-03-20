@@ -8,6 +8,7 @@ import (
 	"strings"
 	"synapse/api/types"
 	"synapse/common"
+	"synapse/connector/rpc"
 	service2 "synapse/connector/service"
 	"synapse/log"
 	"synapse/utils"
@@ -53,8 +54,7 @@ func (ctl *InferenceController) DoInference(ctx *gin.Context, req *types.Inferen
 	index := 0
 	for _, message := range req.Messages {
 		messages[index] = &synapseGrpc.Message{
-			Content: message.Content,
-			Role:    message.Role,
+			Text: message.Content,
 		}
 	}
 
@@ -65,34 +65,20 @@ func (ctl *InferenceController) DoInference(ctx *gin.Context, req *types.Inferen
 		streamDetail := service2.GlobalStreamManager.GetStreams()[clientID]
 		log.Log.Infow("[search] clients", zap.Any("clientInfo", streamDetail))
 
-		inferenceMessage := &synapseGrpc.InferenceMessage{
-			Temperature:       req.Temperature,
-			TopP:              req.TopP,
-			MaxTokens:         req.MaxTokens,
-			FrequencyPenalty:  req.FrequencyPenalty,
-			PresencePenalty:   req.PresencePenalty,
-			RepetitionPenalty: req.RepetitionPenalty,
-			Model:             req.Model,
-			Stream:            req.Stream,
-			Messages:          messages,
-		}
+		// todo: leo
+		//inferenceMessage := &synapseGrpc.Message{
+		//
+		//}
 
-		if req.Stream {
-			inferenceMessage.StreamOptions = &synapseGrpc.StreamOptions{
-				IncludeUsage: req.StreamOptions.IncludeUsage,
-			}
-		}
+		//if req.Stream {
+		//	inferenceMessage.StreamOptions = &synapseGrpc.StreamOptions{
+		//		IncludeUsage: req.StreamOptions.IncludeUsage,
+		//	}
+		//}
 
 		if streamDetail.Ready && streamDetail.Model == req.Model {
 			// create inference request message
-			msg := &synapseGrpc.YottaLabsStream{
-				MessageId: requestID,
-				Timestamp: time.Now().Unix(),
-				ClientId:  clientID,
-				Payload: &synapseGrpc.YottaLabsStream_InferenceMessage{
-					InferenceMessage: inferenceMessage,
-				},
-			}
+			msg := &synapseGrpc.Message{}
 			if err := service2.GlobalStreamManager.SendMessage(clientID, msg); err != nil {
 				log.Log.Errorw("send message to client failed", zap.Error(err))
 			} else {
@@ -107,13 +93,13 @@ func (ctl *InferenceController) DoInference(ctx *gin.Context, req *types.Inferen
 		return
 	}
 
-	respChannel := service2.GlobalChannelManager.CreateChannel(requestID)
-	defer service2.GlobalChannelManager.RemoveChannel(requestID)
+	respChannel := rpc.GlobalChannelManager.CreateChannel(requestID)
+	defer rpc.GlobalChannelManager.RemoveChannel(requestID)
 
 	if !req.Stream {
 		select {
 		case result := <-respChannel.InferenceResultChan:
-			content := result.InferenceResult.Content
+			content := result.Text
 			common.JSON(ctx, common.HttpOk, common.Ok(content))
 		case <-time.After(30 * time.Second):
 			ctx.JSON(common.HttpOk, common.ErrTimeout)
@@ -132,7 +118,7 @@ func (ctl *InferenceController) DoInference(ctx *gin.Context, req *types.Inferen
 			select {
 			case result := <-respChannel.InferenceResultChan:
 				// remove data: prefix
-				content := result.InferenceResult.Content
+				content := result.Text
 				if len(content) > 6 && content[:6] == "data: " {
 					content = content[6:]
 				}
