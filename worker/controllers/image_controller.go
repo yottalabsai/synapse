@@ -4,12 +4,12 @@ import (
 	"github.com/gin-gonic/gin"
 	synapseGrpc "github.com/yottalabsai/endorphin/pkg/services/synapse"
 	"go.uber.org/zap"
-	"synapse/api/types"
 	"synapse/common"
 	"synapse/connector/rpc"
 	service2 "synapse/connector/service"
 	"synapse/log"
 	"synapse/utils"
+	"synapse/worker/types"
 	"time"
 )
 

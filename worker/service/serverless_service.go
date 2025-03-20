@@ -5,10 +5,10 @@ import (
 	"encoding/json"
 	"github.com/jinzhu/copier"
 	"gorm.io/gorm"
-	"synapse/api/types"
 	"synapse/common"
-	"synapse/repository"
-	entity "synapse/repository/types"
+	"synapse/worker/repository"
+	entity "synapse/worker/repository/types"
+	"synapse/worker/types"
 	"time"
 )
 

@@ -3,7 +3,7 @@ package repo
 import (
 	"github.com/jinzhu/copier"
 	"gorm.io/gorm"
-	"synapse/repository/types"
+	"synapse/worker/repository/types"
 )
 
 type ServerlessResourceRepo struct {

@@ -2,10 +2,10 @@ package controllers
 
 import (
 	"github.com/gin-gonic/gin"
-	"synapse/api/types"
 	"synapse/common"
-	"synapse/connector/service"
 	"synapse/log"
+	"synapse/worker/service"
+	"synapse/worker/types"
 )
 
 type ServerlessController struct {

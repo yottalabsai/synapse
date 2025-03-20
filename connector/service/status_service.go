@@ -1,6 +1,8 @@
 package service
 
-import "synapse/api/types"
+import (
+	"synapse/connector/types"
+)
 
 type StatusService struct {
 	manager *StreamManager

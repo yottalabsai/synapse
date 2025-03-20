@@ -1,19 +1,19 @@
-package routers
+package worker
 
 import (
 	"context"
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	"github.com/go-resty/resty/v2"
-	"synapse/api/controllers"
-	"synapse/api/middleware"
 	"synapse/common"
 	"synapse/config"
 	"synapse/connector/rpc"
-	service2 "synapse/connector/service"
-	"synapse/job"
 	"synapse/log"
 	"synapse/utils"
+	"synapse/worker/controllers"
+	job2 "synapse/worker/job"
+	"synapse/worker/middleware"
+	service2 "synapse/worker/service"
 )
 
 func InitRouter(ctx context.Context, engine *gin.Engine) error {
@@ -21,10 +21,9 @@ func InitRouter(ctx context.Context, engine *gin.Engine) error {
 	// init rpc client
 	serviceConfigs := config.MustGetServiceConfig(common.ServiceYottaSaaS)
 	yottaSaaSClient := rpc.NewYottaSaaSClient(&serviceConfigs[0], resty.NewWithClient(utils.ProxiedClientFromEnv()).SetLogger(log.Log))
-	inferencePublicModelJob := job.NewInferencePublicModelJob(ctx, yottaSaaSClient)
+	inferencePublicModelJob := job2.NewInferencePublicModelJob(ctx, yottaSaaSClient)
 	// Init other services
 	svc := service2.NewServerlessService(config.DB)
-	statusService := service2.NewStatusService(service2.GlobalStreamManager)
 
 	var (
 		apiGroupAuth = engine.Group("/api/v1", middleware.RequestHeader(), middleware.Authentication())
@@ -32,7 +31,7 @@ func InitRouter(ctx context.Context, engine *gin.Engine) error {
 
 	{
 		// Health check
-		ctl := controllers.NewHealthController(statusService)
+		ctl := controllers.NewHealthController(nil)
 		apiGroupAuth.GET("/health", ctl.Health)
 		apiGroupAuth.GET("/status", ctl.Status)
 	}
@@ -61,7 +60,7 @@ func InitRouter(ctx context.Context, engine *gin.Engine) error {
 	}
 
 	// Run job
-	jobManager := job.NewSynapseJobManager(inferencePublicModelJob)
+	jobManager := job2.NewSynapseJobManager(inferencePublicModelJob)
 	jobManager.StartJobs()
 
 	return nil
