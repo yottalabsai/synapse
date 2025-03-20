@@ -9,10 +9,10 @@ import (
 	"synapse/api/middleware"
 	"synapse/common"
 	"synapse/config"
+	"synapse/connector/rpc"
+	service2 "synapse/connector/service"
 	"synapse/job"
 	"synapse/log"
-	"synapse/rpc"
-	"synapse/service"
 	"synapse/utils"
 )
 
@@ -23,8 +23,8 @@ func InitRouter(ctx context.Context, engine *gin.Engine) error {
 	yottaSaaSClient := rpc.NewYottaSaaSClient(&serviceConfigs[0], resty.NewWithClient(utils.ProxiedClientFromEnv()).SetLogger(log.Log))
 	inferencePublicModelJob := job.NewInferencePublicModelJob(ctx, yottaSaaSClient)
 	// Init other services
-	svc := service.NewServerlessService(config.DB)
-	statusService := service.NewStatusService(service.GlobalStreamManager)
+	svc := service2.NewServerlessService(config.DB)
+	statusService := service2.NewStatusService(service2.GlobalStreamManager)
 
 	var (
 		apiGroupAuth = engine.Group("/api/v1", middleware.RequestHeader(), middleware.Authentication())

@@ -1,4 +1,8 @@
 ###
+GET {{server}}/health
+Content-Type: application/json
+
+###
 POST {{server}}/endpoints
 Content-Type: application/json
 

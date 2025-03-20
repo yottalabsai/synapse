@@ -4,8 +4,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"synapse/api/types"
 	"synapse/common"
+	"synapse/connector/service"
 	"synapse/log"
-	"synapse/service"
 )
 
 type ServerlessController struct {

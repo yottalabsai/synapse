@@ -8,17 +8,17 @@ import (
 	"strings"
 	"synapse/api/types"
 	"synapse/common"
+	service2 "synapse/connector/service"
 	"synapse/log"
-	"synapse/service"
 	"synapse/utils"
 	"time"
 )
 
 type InferenceController struct {
-	server *service.SynapseServer
+	server *service2.SynapseServer
 }
 
-func NewInferenceController(server *service.SynapseServer) *InferenceController {
+func NewInferenceController(server *service2.SynapseServer) *InferenceController {
 	return &InferenceController{server: server}
 }
 
@@ -61,8 +61,8 @@ func (ctl *InferenceController) DoInference(ctx *gin.Context, req *types.Inferen
 	// filter ready client
 	requestID := utils.GenerateRequestId()
 	flag := false
-	for clientID := range service.GlobalStreamManager.GetStreams() {
-		streamDetail := service.GlobalStreamManager.GetStreams()[clientID]
+	for clientID := range service2.GlobalStreamManager.GetStreams() {
+		streamDetail := service2.GlobalStreamManager.GetStreams()[clientID]
 		log.Log.Infow("[search] clients", zap.Any("clientInfo", streamDetail))
 
 		inferenceMessage := &synapseGrpc.InferenceMessage{
@@ -93,7 +93,7 @@ func (ctl *InferenceController) DoInference(ctx *gin.Context, req *types.Inferen
 					InferenceMessage: inferenceMessage,
 				},
 			}
-			if err := service.GlobalStreamManager.SendMessage(clientID, msg); err != nil {
+			if err := service2.GlobalStreamManager.SendMessage(clientID, msg); err != nil {
 				log.Log.Errorw("send message to client failed", zap.Error(err))
 			} else {
 				flag = true
@@ -107,8 +107,8 @@ func (ctl *InferenceController) DoInference(ctx *gin.Context, req *types.Inferen
 		return
 	}
 
-	respChannel := service.GlobalChannelManager.CreateChannel(requestID)
-	defer service.GlobalChannelManager.RemoveChannel(requestID)
+	respChannel := service2.GlobalChannelManager.CreateChannel(requestID)
+	defer service2.GlobalChannelManager.RemoveChannel(requestID)
 
 	if !req.Stream {
 		select {

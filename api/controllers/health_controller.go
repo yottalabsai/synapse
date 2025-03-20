@@ -3,7 +3,7 @@ package controllers
 import (
 	"github.com/gin-gonic/gin"
 	"synapse/common"
-	"synapse/service"
+	"synapse/connector/service"
 )
 
 type HealthController struct {

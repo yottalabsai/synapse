@@ -5,9 +5,9 @@ import (
 	synapseGrpc "github.com/yottalabsai/endorphin/pkg/services/synapse"
 	"go.uber.org/zap"
 	"synapse/common"
+	"synapse/connector/rpc"
+	"synapse/connector/service"
 	"synapse/log"
-	"synapse/rpc"
-	"synapse/service"
 	"synapse/utils"
 	"time"
 )

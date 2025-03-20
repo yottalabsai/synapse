@@ -6,17 +6,17 @@ import (
 	"go.uber.org/zap"
 	"synapse/api/types"
 	"synapse/common"
+	service2 "synapse/connector/service"
 	"synapse/log"
-	"synapse/service"
 	"synapse/utils"
 	"time"
 )
 
 type ImageController struct {
-	server *service.SynapseServer
+	server *service2.SynapseServer
 }
 
-func NewImageController(server *service.SynapseServer) *ImageController {
+func NewImageController(server *service2.SynapseServer) *ImageController {
 	return &ImageController{server: server}
 }
 
@@ -49,8 +49,8 @@ func (ctl *ImageController) DoRender(ctx *gin.Context, req *types.TextToImageReq
 	// filter ready client
 	requestID := utils.GenerateRequestId()
 	flag := false
-	for clientID := range service.GlobalStreamManager.GetStreams() {
-		streamDetail := service.GlobalStreamManager.GetStreams()[clientID]
+	for clientID := range service2.GlobalStreamManager.GetStreams() {
+		streamDetail := service2.GlobalStreamManager.GetStreams()[clientID]
 		log.Log.Infow("[search] clients", zap.Any("clientInfo", streamDetail))
 		if streamDetail.Ready && streamDetail.Model == req.Model {
 			// create inference request message
@@ -72,7 +72,7 @@ func (ctl *ImageController) DoRender(ctx *gin.Context, req *types.TextToImageReq
 					},
 				},
 			}
-			if err := service.GlobalStreamManager.SendMessage(clientID, msg); err != nil {
+			if err := service2.GlobalStreamManager.SendMessage(clientID, msg); err != nil {
 				log.Log.Errorw("send message to client failed", zap.Error(err))
 			} else {
 				flag = true
@@ -86,8 +86,8 @@ func (ctl *ImageController) DoRender(ctx *gin.Context, req *types.TextToImageReq
 		return
 	}
 
-	respChannel := service.GlobalChannelManager.CreateChannel(requestID)
-	defer service.GlobalChannelManager.RemoveChannel(requestID)
+	respChannel := service2.GlobalChannelManager.CreateChannel(requestID)
+	defer service2.GlobalChannelManager.RemoveChannel(requestID)
 
 	select {
 	case result := <-respChannel.TextToImageResultChain:

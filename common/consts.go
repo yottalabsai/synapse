@@ -4,6 +4,9 @@ import (
 	"fmt"
 )
 
+const ServiceConnector = "connector"
+const ServiceWorker = "worker"
+
 const StatusStopped = -1
 const StatusInit = 0
 const StatusSuccess = 1

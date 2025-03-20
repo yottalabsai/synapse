@@ -1,11 +1,12 @@
 package config
 
 import (
+	"fmt"
 	"os"
 	"reflect"
 	"strings"
+	"synapse/connector/service"
 	"synapse/log"
-	"synapse/service"
 	"time"
 
 	"github.com/pkg/errors"
@@ -167,7 +168,7 @@ func MustGetServiceConfig(svcName ...string) []ServiceConfig {
 
 const Environment = "PROFILE"
 
-func ReadConfig(val any) (string, error) {
+func ReadConfig(serviceName string, val any) (string, error) {
 	filename := "local"
 	env, found := os.LookupEnv(Environment)
 	if found {
@@ -177,7 +178,7 @@ func ReadConfig(val any) (string, error) {
 	v := viper.New()
 	v.SetConfigName(filename)
 	v.SetConfigType("yaml")
-	v.AddConfigPath("resources")
+	v.AddConfigPath(fmt.Sprintf("resources/%s", serviceName))
 	err := v.ReadInConfig()
 	if err != nil {
 		var configFileNotFoundError viper.ConfigFileNotFoundError
