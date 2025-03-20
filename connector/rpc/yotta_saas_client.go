@@ -8,8 +8,8 @@ import (
 	"net/url"
 	"strings"
 	"synapse/common"
-	"synapse/config"
-	"synapse/utils"
+	"synapse/common/config"
+	"synapse/common/utils"
 )
 
 type YottaSaaSClient struct {

@@ -9,7 +9,7 @@ import (
 	"go.uber.org/zap/zapcore"
 	stdlog "log"
 	"os"
-	"synapse/config"
+	"synapse/common/config"
 	"synapse/log"
 	"time"
 )
