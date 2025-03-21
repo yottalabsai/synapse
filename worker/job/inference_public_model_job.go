@@ -41,7 +41,7 @@ func (job *InferencePublicModelJob) Run() {
 		streamDetail := service.GlobalStreamManager.GetStreams()[clientID]
 		log.Log.Infow("[1]connect clients", zap.Any("clientInfo", streamDetail))
 		if streamDetail.Ready {
-			loadedModels[streamDetail.Model] = true
+			//loadedModels[streamDetail.Model] = true
 		}
 	}
 
@@ -58,11 +58,11 @@ func loadModels(loadedModels map[string]bool, modelInfoMap map[string]*rpc.Model
 			for clientId := range service.GlobalStreamManager.GetStreams() {
 				streamDetail := service.GlobalStreamManager.GetStreams()[clientId]
 				log.Log.Infow("[3]running clients", zap.Any("clientInfo", streamDetail))
-				if streamDetail.ModelType == modelInfo.ModelType {
-					if loadModel(clientId, loadedModels, modelInfo, streamDetail) {
-						break
-					}
-				}
+				//if streamDetail.ModelType == modelInfo.ModelType {
+				//	if loadModel(clientId, loadedModels, modelInfo, streamDetail) {
+				//		break
+				//	}
+				//}
 			}
 		}
 

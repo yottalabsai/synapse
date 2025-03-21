@@ -1,7 +1,10 @@
 package service
 
 import (
-	"synapse/common"
+	"errors"
+	"go.uber.org/zap"
+	"synapse/common/log"
+	"synapse/connector/constants"
 	"sync"
 
 	synapseGrpc "github.com/yottalabsai/endorphin/pkg/services/synapse"
@@ -13,26 +16,36 @@ type StreamManager struct {
 }
 
 type StreamDetail struct {
-	stream    synapseGrpc.SynapseService_CallServer
-	ClientId  string           `json:"clientId"`
-	ModelType common.ModelType `json:"modelType"`
-	Model     string           `json:"model"`
-	Ready     bool             `json:"ready"`
+	stream        synapseGrpc.SynapseService_CallServer
+	ClientId      string   `json:"clientId"`
+	AgentTypes    []string `json:"agentTypes"`
+	SupportModels []string `json:"supportModels"`
+	Ready         bool     `json:"ready"`
 }
 
 var GlobalStreamManager = &StreamManager{
 	streamMap: make(map[string]*StreamDetail),
 }
 
-func (m *StreamManager) AddStream(clientID string, modelType common.ModelType, stream synapseGrpc.SynapseService_CallServer) {
+func (m *StreamManager) AddStream(clientID string,
+	rawAgentTypes []string,
+	supportModels []string,
+	stream synapseGrpc.SynapseService_CallServer) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
+
+	agentTypes, err := convertAgentTypes(rawAgentTypes)
+	if err != nil {
+		log.Log.Errorw("failed to convert agent types", zap.Error(err))
+		return
+	}
+
 	m.streamMap[clientID] = &StreamDetail{
-		stream:    stream,
-		ClientId:  clientID,
-		ModelType: modelType,
-		Model:     "",
-		Ready:     false,
+		stream:        stream,
+		ClientId:      clientID,
+		AgentTypes:    agentTypes,
+		SupportModels: supportModels,
+		Ready:         false,
 	}
 }
 
@@ -59,4 +72,18 @@ func (m *StreamManager) RemoveStream(clientID string) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	delete(m.streamMap, clientID)
+}
+
+// convertAgentTypes converts a list of agent types to a list of connector.AgentType
+func convertAgentTypes(agentTypes []string) ([]string, error) {
+	var converted []string
+	for _, agentType := range agentTypes {
+		// Add error handling logic if needed
+		constants.IsValidAgentType(agentType)
+		if agentType == "" {
+			return nil, errors.New("invalid agent type")
+		}
+		converted = append(converted, agentType)
+	}
+	return converted, nil
 }

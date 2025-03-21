@@ -41,18 +41,18 @@ func (svc *StatusService) GetTotalNode() int {
 
 func (svc *StatusService) GetModelMap() []*types.ModelInfo {
 
-	streamMap := svc.manager.GetStreams()
+	//streamMap := svc.manager.GetStreams()
 	var modelInfos []*types.ModelInfo
 
-	for _, streamDetail := range streamMap {
-		if streamDetail.Ready == true {
-			modelInfos = append(modelInfos, &types.ModelInfo{
-				Model: streamDetail.Model,
-				Count: 1,
-				TPM:   modelRpmMap[streamDetail.Model],
-			})
-		}
-	}
-
+	//for _, streamDetail := range streamMap {
+	//	if streamDetail.Ready == true {
+	//		modelInfos = append(modelInfos, &types.ModelInfo{
+	//			Model: streamDetail.Model,
+	//			Count: 1,
+	//			TPM:   modelRpmMap[streamDetail.Model],
+	//		})
+	//	}
+	//}
+	//
 	return modelInfos
 }

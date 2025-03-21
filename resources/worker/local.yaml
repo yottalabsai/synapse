@@ -1,0 +1,53 @@
+server:
+  host: 0.0.0.0
+  port: 8002
+  gin:
+    mode: debug
+
+datasource:
+  pool:
+    max_open_conns: 10
+    max_idle_conns: 10
+    conn_max_lifetime: 30m
+    conn_max_idle_time: 1m
+  gorm:
+    log_level: info
+  postgres:
+    host: 127.0.0.1
+    port: 25432
+    username: postgres
+    password: 123456
+    database: yotta
+    search_path: synapse
+    time_zone: UTC
+    ssl_mode: disable
+
+redis:
+  mode: standalone # cluster
+  network: tcp
+  host: 127.0.0.1
+  port: 26379
+  password:
+  db: 0
+  tls_enabled: false
+
+logger:
+  elasticsearch:
+    enabled: false
+    host: http://localhost:9200
+    username: elastic
+    password: 123456
+  console_color_enabled: true
+  appenders:
+    - level: debug
+      type: file
+
+grpc_server:
+  host: 0.0.0.0
+  port: 50051
+
+services:
+  - name: yotta-saas
+    endpoint: "https://api.dev.yottalabs.ai"
+    headers:
+      "apiKey": "N.A."

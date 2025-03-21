@@ -3,7 +3,6 @@ package service
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/bwmarrin/snowflake"
 	synapseGrpc "github.com/yottalabsai/endorphin/pkg/services/synapse"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
@@ -12,25 +11,12 @@ import (
 	"io"
 	"synapse/common"
 	"synapse/common/log"
-	"sync"
+	"synapse/connector/types"
 )
 
 var (
-	node      *snowflake.Node
-	nodeOnce  sync.Once
 	ClientMap = make(map[string]synapseGrpc.SynapseService_CallServer)
 )
-
-func GetSnowflakeNode() *snowflake.Node {
-	nodeOnce.Do(func() {
-		var err error
-		node, err = snowflake.NewNode(1)
-		if err != nil {
-			log.Log.Fatalw("Failed to create snowflake node", zap.Error(err))
-		}
-	})
-	return node
-}
 
 // SynapseServer synapse service server
 type SynapseServer struct {
@@ -50,23 +36,21 @@ func (s *SynapseServer) Call(stream synapseGrpc.SynapseService_CallServer) error
 	}
 
 	// check client_id is required
-	clientIds := md.Get("clientid")
-
+	clientIds := md.Get("client_id")
 	if len(clientIds) == 0 {
-		return status.Error(codes.InvalidArgument, "clientId is required")
+		return status.Error(codes.InvalidArgument, "client_id is required")
 	}
 	clientId := clientIds[0]
-
-	modelTypes := md.Get("modeltype")
-	var modelType common.ModelType
-	if len(modelTypes) == 0 {
-		modelType = common.Inference
-	} else {
-		modelType = common.ModelType(modelTypes[0])
+	rawAgentTypes := md.Get("agent_types")
+	agentTypes, err := convertAgentTypes(rawAgentTypes)
+	if err != nil {
+		return status.Error(codes.InvalidArgument, err.Error())
 	}
 
+	supportModels := md.Get("support_models")
+
 	// add stream to manager
-	GlobalStreamManager.AddStream(clientId, modelType, stream)
+	GlobalStreamManager.AddStream(clientId, agentTypes, supportModels, stream)
 	defer GlobalStreamManager.RemoveStream(clientId)
 
 	for {
@@ -94,20 +78,23 @@ func handleMessage(stream synapseGrpc.SynapseService_CallServer, msg *synapseGrp
 	// log.Log.Info("received stream message", zap.Any("message", msg))
 
 	payload := msg.GetText()
-	result, err := parseMessage[Example](payload)
+	result, err := parseMessage[types.Common](payload)
 	if err != nil {
 		return err
 	}
 
-	switch v := any(result).(type) {
-	case Ping:
-		log.Log.Infow("Ping", zap.String("clientId", v.Name))
+	switch types.MessageType(result.MessageType) {
+	case types.Error:
+		log.Log.Errorw("Error", zap.String("clientId", result.ClientId), zap.String("messageId", result.MessageId))
+
+	case types.Ping:
+		log.Log.Infow("Ping", zap.String("clientId", result.ClientId), zap.String("messageId", result.MessageId))
 		// 	checkAgentHealth(msg.ClientId, msg.ModelType, stream)
 		return stream.Send(nil)
-	case Inference:
+	case types.Inference:
 		log.Log.Info("Inference")
 
-	case TextToImage:
+	case types.TextToImage:
 		log.Log.Info("TextToImage")
 
 	default:
@@ -118,11 +105,11 @@ func handleMessage(stream synapseGrpc.SynapseService_CallServer, msg *synapseGrp
 }
 
 func checkAgentHealth(clientId string, modeTypeStr string, stream synapseGrpc.SynapseService_CallServer) {
-	modeType := getModelType(modeTypeStr)
-	_, ok := GlobalStreamManager.GetStreams()[clientId]
-	if !ok {
-		GlobalStreamManager.AddStream(clientId, modeType, stream)
-	}
+	//modeType := getModelType(modeTypeStr)
+	//_, ok := GlobalStreamManager.GetStreams()[clientId]
+	//if !ok {
+	//	GlobalStreamManager.AddStream(clientId, modeType, stream)
+	//}
 }
 
 func getModelType(modeType string) common.ModelType {
@@ -137,20 +124,4 @@ func parseMessage[T any](text string) (*T, error) {
 		return nil, err
 	}
 	return &result, nil
-}
-
-type Example struct {
-	Name  string `json:"name"`
-	Value int    `json:"value"`
-}
-
-type Ping struct {
-	Name  string `json:"name"`
-	Value int    `json:"value"`
-}
-
-type Inference struct {
-}
-
-type TextToImage struct {
 }

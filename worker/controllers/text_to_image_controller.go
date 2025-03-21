@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"github.com/gin-gonic/gin"
-	synapseGrpc "github.com/yottalabsai/endorphin/pkg/services/synapse"
 	"go.uber.org/zap"
 	"synapse/common"
 	"synapse/common/log"
@@ -53,16 +52,16 @@ func (ctl *TextToImageController) DoRender(ctx *gin.Context, req *types.TextToIm
 	for clientID := range service2.GlobalStreamManager.GetStreams() {
 		streamDetail := service2.GlobalStreamManager.GetStreams()[clientID]
 		log.Log.Infow("[search] clients", zap.Any("clientInfo", streamDetail))
-		if streamDetail.Ready && streamDetail.Model == req.Model {
-			// create inference request message
-			msg := &synapseGrpc.Message{}
-			if err := service2.GlobalStreamManager.SendMessage(clientID, msg); err != nil {
-				log.Log.Errorw("send message to client failed", zap.Error(err))
-			} else {
-				flag = true
-				break
-			}
-		}
+		//if streamDetail.Ready && streamDetail.Model == req.Model {
+		//	// create inference request message
+		//	msg := &synapseGrpc.Message{}
+		//	if err := service2.GlobalStreamManager.SendMessage(clientID, msg); err != nil {
+		//		log.Log.Errorw("send message to client failed", zap.Error(err))
+		//	} else {
+		//		flag = true
+		//		break
+		//	}
+		//}
 	}
 
 	if !flag {

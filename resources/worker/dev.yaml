@@ -1,0 +1,53 @@
+server:
+  host: 0.0.0.0
+  port: 8002
+  gin:
+    mode: debug
+
+datasource:
+  pool:
+    max_open_conns: 10
+    max_idle_conns: 10
+    conn_max_lifetime: 30m
+    conn_max_idle_time: 1m
+  gorm:
+    log_level: info
+  postgres:
+    host: ${POSTGRES_HOST}
+    port: ${POSTGRES_PORT}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    database: ${POSTGRES_DB}
+    search_path: ${POSTGRES_SEARCH_PATH}
+    time_zone: UTC
+    ssl_mode: disable
+
+redis:
+  mode: standalone # cluster
+  network: tcp
+  host: ${REDIS_HOST}
+  port: ${REDIS_PORT}
+  password: ${REDIS_PASSWORD}
+  db: 0
+  tls_enabled: false
+
+logger:
+  elasticsearch:
+    enabled: false
+    host: ${ELASTICSEARCH_HOST}
+    username: ${ELASTICSEARCH_USER}
+    password: ${ELASTICSEARCH_PASSWORD}
+  console_color_enabled: true
+  appenders:
+    - level: debug
+      type: file
+
+grpc_server:
+  host: 0.0.0.0
+  port: 50051
+
+services:
+  - name: yotta-saas
+    endpoint: "http://saas-platform-service"
+    headers:
+      "apiKey": "N.A."

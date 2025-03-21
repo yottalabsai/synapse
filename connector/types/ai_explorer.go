@@ -80,17 +80,6 @@ type Usage struct {
 }
 
 // TextToImage types
-type TextToImageRequest struct {
-	Model             string  `json:"model" binding:"required"`
-	Prompt            string  `json:"prompt"`
-	NumInferenceSteps int32   `json:"num_inference_steps" binding:"required"`
-	GuidanceScale     float64 `json:"guidance_scale"`
-	LoraWeight        float64 `json:"lora_weight"`
-	Seed              int32   `json:"seed"`
-	Width             int32   `json:"width"`
-	Height            int32   `json:"height"`
-	PagScale          float64 `json:"pag_scale"`
-}
 
 type TextToImageResponse struct {
 	Created int64          `json:"created"`
