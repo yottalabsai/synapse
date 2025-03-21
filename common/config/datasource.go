@@ -13,12 +13,12 @@ import (
 	"moul.io/zapgorm2"
 )
 
-func InitDatasource(_ context.Context, zapLogger *zap.Logger, datasourceCfg *DatasourceConfig) error {
+func InitDatasource(_ context.Context, zapLogger *zap.SugaredLogger, datasourceCfg *DatasourceConfig) error {
 	gormCfg := datasourceCfg.GORM
 
 	cfg := &gorm.Config{
 		PrepareStmt: true,
-		Logger:      buildLogger(gormCfg.LogLevel, zapLogger),
+		Logger:      buildLogger(gormCfg.LogLevel, zapLogger.Desugar()),
 	}
 
 	var err error
@@ -37,7 +37,7 @@ func InitDatasource(_ context.Context, zapLogger *zap.Logger, datasourceCfg *Dat
 	sDB.SetConnMaxIdleTime(datasourceCfg.Pool.ConnMaxIdleTime)
 
 	DB = db
-	
+
 	return nil
 }
 

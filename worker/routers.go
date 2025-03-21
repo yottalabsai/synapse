@@ -2,28 +2,17 @@ package worker
 
 import (
 	"context"
-	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
-	"github.com/go-resty/resty/v2"
-	"synapse/common"
 	"synapse/common/config"
-	"synapse/common/log"
-	"synapse/common/utils"
-	"synapse/connector/rpc"
 	"synapse/worker/controllers"
-	job2 "synapse/worker/job"
 	"synapse/worker/middleware"
-	service2 "synapse/worker/service"
+	service "synapse/worker/service"
 )
 
 func InitRouter(ctx context.Context, engine *gin.Engine) error {
-	engine.Use(ginzap.RecoveryWithZap(log.ZapLog, true))
 	// init rpc client
-	serviceConfigs := config.MustGetServiceConfig(common.ServiceYottaSaaS)
-	yottaSaaSClient := rpc.NewYottaSaaSClient(&serviceConfigs[0], resty.NewWithClient(utils.ProxiedClientFromEnv()).SetLogger(log.Log))
-	inferencePublicModelJob := job2.NewInferencePublicModelJob(ctx, yottaSaaSClient)
 	// Init other services
-	svc := service2.NewServerlessService(config.DB)
+	svc := service.NewServerlessService(config.DB)
 
 	var (
 		apiGroupAuth = engine.Group("/api/v1", middleware.RequestHeader(), middleware.Authentication())
@@ -58,10 +47,6 @@ func InitRouter(ctx context.Context, engine *gin.Engine) error {
 		ctl := controllers.NewImageController(config.GrpcServer)
 		apiGroupAuth.POST("/endpoints/:endpointId/images", ctl.Render)
 	}
-
-	// Run job
-	jobManager := job2.NewSynapseJobManager(inferencePublicModelJob)
-	jobManager.StartJobs()
 
 	return nil
 }

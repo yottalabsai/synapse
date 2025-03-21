@@ -3,119 +3,45 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
-	"google.golang.org/grpc/reflection"
-	"net"
-	"net/http"
 	"os/signal"
 	"synapse/common"
-	config "synapse/common/config"
+	commonConfig "synapse/common/config"
 	"synapse/common/log"
-	"synapse/connector/service"
-	"synapse/worker"
-	"synapse/worker/repository/types"
+	"synapse/connector"
+	"synapse/connector/config"
 	"syscall"
 
-	"github.com/gin-gonic/gin"
-	"github.com/pkg/errors"
-	synapseGrpc "github.com/yottalabsai/endorphin/pkg/services/synapse"
 	"go.uber.org/zap"
-	"google.golang.org/grpc"
-	"synapse/cmd"
 )
 
 func main() {
 	flag.Parse()
 
-	defer log.ZapLog.Sync()
+	defer log.Log.Sync()
 	defer func() {
 		if err := recover(); err != nil {
-			log.ZapLog.Error("unknown error occurred", zap.Any("err", err))
+			log.Log.Error("unknown error occurred", zap.Any("err", err))
 		}
 	}()
 
-	_, err := config.ReadConfig(common.ServiceConnector, &config.Config)
+	_, err := commonConfig.ReadConfig(common.ServiceConnector, &config.Config)
 	if err != nil {
-		log.ZapLog.Fatal("read config failed", zap.Error(err))
+		log.Log.Fatal("read config failed", zap.Error(err))
 	}
-
-	cmd.InitLogger()
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT, syscall.SIGKILL)
 	defer stop()
 
-	config.Redis = config.InitRedis(&config.Config.Redis)
+	config.Redis = commonConfig.InitRedis(&config.Config.Redis)
 
-	if err := config.InitDatasource(ctx, log.ZapLog, &config.Config.Datasource); err != nil {
-		log.ZapLog.Fatal("init datasource failed", zap.Error(err))
+	if err := commonConfig.InitDatasource(ctx, log.Log, &config.Config.Datasource); err != nil {
+		log.Log.Fatal("init datasource failed", zap.Error(err))
 	}
 
-	MigrateDB()
-
-	if err := Start(ctx); err != nil {
-		log.ZapLog.Fatal("start app failed", zap.Error(err))
+	if err := connector.Start(ctx); err != nil {
+		log.Log.Fatal("start app failed", zap.Error(err))
 	}
 
 	<-ctx.Done()
-	log.ZapLog.Info("app service stopped")
-}
-
-func MigrateDB() {
-	err := config.DB.AutoMigrate(&types.ServerlessResource{})
-	if err != nil {
-		log.ZapLog.Error("db migration error", zap.Error(err))
-	}
-}
-
-func Start(ctx context.Context) error {
-
-	engine := gin.New()
-	if config.Config.Server.GIN.Mode != "" {
-		gin.SetMode(config.Config.Server.GIN.Mode)
-	}
-	engine.Use(gin.Recovery())
-
-	if err := worker.InitRouter(ctx, engine); err != nil {
-		return errors.WithMessagef(err, "init router error")
-	}
-
-	go func() {
-		if err := http.ListenAndServe(
-			fmt.Sprintf("%s:%d", config.Config.Server.Host, config.Config.Server.Port),
-			engine,
-		); err != nil {
-			log.Log.Warnw("http server stopped", zap.Error(err))
-		}
-	}()
-
-	// start grpc server
-	go func() {
-		if err := startGrpc(); err != nil {
-			log.ZapLog.Error("grpc server stopped", zap.Error(err))
-		}
-	}()
-
-	return nil
-}
-
-func startGrpc() error {
-	grpcServerConfig := config.Config.GrpcServer
-	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%d", grpcServerConfig.Host, grpcServerConfig.Port))
-	if err != nil {
-		log.Log.Errorw("failed to listen: %v", err)
-		return err
-	}
-
-	s := grpc.NewServer()
-	// Register reflection service on gRPC server.
-	reflection.Register(s)
-	synapseGrpc.RegisterSynapseServiceServer(s, service.NewSynapseServer())
-
-	log.Log.Infow("grpc server listening at:", lis.Addr())
-
-	if err := s.Serve(lis); err != nil {
-		log.Log.Errorw("failed to serve:", err)
-		return err
-	}
-	return nil
+	log.Log.Info("app service stopped")
 }

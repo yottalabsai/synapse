@@ -2,98 +2,46 @@ package log
 
 import (
 	"go.uber.org/zap"
-	stdlog "log"
+	"go.uber.org/zap/zapcore"
+	"gopkg.in/natefinch/lumberjack.v2"
+	"os"
 )
 
-var _ Logger = (*noopLogger)(nil)
-
-var (
-	Log Logger
-	Nop Logger = &noopLogger{}
-
-	ZapLog *zap.Logger
-)
-
-type Logger interface {
-	Debug(args ...any)
-	Info(args ...any)
-	Warn(args ...any)
-	Error(args ...any)
-	Fatal(args ...any)
-
-	Debugf(format string, args ...any)
-	Infof(format string, args ...any)
-	Warnf(format string, args ...any)
-	Errorf(format string, args ...any)
-	Fatalf(format string, args ...any)
-
-	Debugw(msg string, keysAndValues ...any)
-	Infow(msg string, keysAndValues ...any)
-	Warnw(msg string, keysAndValues ...any)
-	Errorw(msg string, keysAndValues ...any)
-	Fatalw(msg string, keysAndValues ...any)
-}
+var Log *zap.SugaredLogger
 
 func init() {
-	var (
-		err       error
-		zapLogger *zap.Logger
-	)
-	zapLogger, err = zap.NewDevelopment()
-	if err != nil {
-		stdlog.Fatalf("can't initialize zap logger: %v", err)
+	lumberJackLogger := &lumberjack.Logger{
+		Filename:   "./logs/app.log",
+		MaxSize:    100, // megabytes
+		MaxBackups: 1,
+		MaxAge:     7,     //days
+		Compress:   false, // disabled by default
 	}
+	defer lumberJackLogger.Close()
 
-	ZapLog = zapLogger
+	config := zap.NewDevelopmentEncoderConfig()
+	config.EncodeCaller = zapcore.ShortCallerEncoder // 显示完整文件路径
+	config.EncodeTime = zapcore.ISO8601TimeEncoder   // 设置时间格式
+	fileEncoder := zapcore.NewConsoleEncoder(config)
 
-	slogger := zapLogger.Sugar()
-	Log = slogger
-}
+	coreConsole := zapcore.NewCore(
+		fileEncoder,             //编码设置
+		zapcore.Lock(os.Stdout), //输出到控制台
+		zap.InfoLevel,           //日志等级
+	)
 
-type noopLogger struct {
-}
+	coreFile := zapcore.NewCore(
+		fileEncoder,                       //编码设置
+		zapcore.AddSync(lumberJackLogger), //输出到文件
+		zap.InfoLevel,                     //日志等级
+	)
 
-func (n *noopLogger) Debug(args ...any) {
-}
+	core := zapcore.NewTee(
+		coreConsole,
+		coreFile,
+	)
 
-func (n *noopLogger) Info(args ...any) {
-}
+	_log := zap.New(core, zap.AddCaller(), zap.AddStacktrace(zapcore.ErrorLevel))
+	Log = _log.Sugar()
 
-func (n *noopLogger) Warn(args ...any) {
-}
-
-func (n *noopLogger) Error(args ...any) {
-}
-
-func (n *noopLogger) Fatal(args ...any) {
-}
-
-func (n *noopLogger) Debugf(format string, args ...any) {
-}
-
-func (n *noopLogger) Infof(format string, args ...any) {
-}
-
-func (n *noopLogger) Warnf(format string, args ...any) {
-}
-
-func (n *noopLogger) Errorf(format string, args ...any) {
-}
-
-func (n *noopLogger) Fatalf(format string, args ...any) {
-}
-
-func (n *noopLogger) Debugw(msg string, keysAndValues ...any) {
-}
-
-func (n *noopLogger) Infow(msg string, keysAndValues ...any) {
-}
-
-func (n *noopLogger) Warnw(msg string, keysAndValues ...any) {
-}
-
-func (n *noopLogger) Errorw(msg string, keysAndValues ...any) {
-}
-
-func (n *noopLogger) Fatalw(msg string, keysAndValues ...any) {
 }

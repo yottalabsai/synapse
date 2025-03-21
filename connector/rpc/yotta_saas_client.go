@@ -8,17 +8,18 @@ import (
 	"net/url"
 	"strings"
 	"synapse/common"
-	"synapse/common/config"
+	commonConfig "synapse/common/config"
 	"synapse/common/utils"
+	"synapse/connector/config"
 )
 
 type YottaSaaSClient struct {
-	cfg   *config.ServiceConfig
+	cfg   *commonConfig.ServiceConfig
 	resty *resty.Client
 }
 
-func NewYottaSaaSClient(cfg *config.ServiceConfig, client *resty.Client) *YottaSaaSClient {
-	serviceConfig := config.MustGetServiceConfig(common.ServiceYottaSaaS)[0]
+func NewYottaSaaSClient(cfg *commonConfig.ServiceConfig, client *resty.Client) *YottaSaaSClient {
+	serviceConfig := commonConfig.MustGetServiceConfig(config.Config.App.Services, common.ServiceYottaSaaS)[0]
 	return &YottaSaaSClient{
 		cfg:   &serviceConfig,
 		resty: client,

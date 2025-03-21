@@ -4,9 +4,9 @@ go 1.22.6
 
 require (
 	github.com/bwmarrin/snowflake v0.3.0
+	github.com/cockroachdb/sentry-go v0.6.1-cockroachdb.2
 	github.com/elastic/go-elasticsearch/v7 v7.17.10
 	github.com/ethereum/go-ethereum v1.13.14
-	github.com/gin-contrib/zap v1.1.4
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-resty/resty/v2 v2.16.2
 	github.com/gomodule/redigo v1.9.2
@@ -19,10 +19,10 @@ require (
 	github.com/shopspring/decimal v1.4.0
 	github.com/spf13/viper v1.18.2
 	github.com/yottalabsai/endorphin v0.0.15
-	go.elastic.co/ecszap v1.0.3
 	go.uber.org/zap v1.27.0
 	golang.org/x/text v0.17.0
 	google.golang.org/grpc v1.62.1
+	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 	gorm.io/driver/postgres v1.5.9
 	gorm.io/gorm v1.25.10
 	moul.io/zapgorm2 v1.3.0

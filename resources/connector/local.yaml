@@ -46,8 +46,9 @@ grpc_server:
   host: 0.0.0.0
   port: 50051
 
-services:
-  - name: yotta-saas
-    endpoint: "https://api.dev.yottalabs.ai"
-    headers:
-      "apiKey": "N.A."
+app:
+  services:
+    - name: yotta-saas
+      endpoint: "https://api.dev.yottalabs.ai"
+      headers:
+        "apiKey": "N.A."

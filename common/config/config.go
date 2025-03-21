@@ -148,11 +148,11 @@ type ServiceConfig struct {
 	Headers  map[string]string `json:"headers" yaml:"headers" mapstructure:"headers"`
 }
 
-func MustGetServiceConfig(svcName ...string) []ServiceConfig {
+func MustGetServiceConfig(services []ServiceConfig, svcName ...string) []ServiceConfig {
 	res := make([]ServiceConfig, len(svcName))
 	for i, svc := range svcName {
 		var found bool
-		for _, info := range Config.Services {
+		for _, info := range services {
 			if strings.ToLower(info.Name) == strings.ToLower(svc) {
 				res[i] = info
 				found = true
