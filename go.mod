@@ -6,7 +6,6 @@ require (
 	github.com/bwmarrin/snowflake v0.3.0
 	github.com/cockroachdb/sentry-go v0.6.1-cockroachdb.2
 	github.com/elastic/go-elasticsearch/v7 v7.17.10
-	github.com/ethereum/go-ethereum v1.13.14
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-resty/resty/v2 v2.16.2
 	github.com/gomodule/redigo v1.9.2
@@ -16,7 +15,6 @@ require (
 	github.com/redis/go-redis/v9 v9.7.0
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/samber/lo v1.47.0
-	github.com/shopspring/decimal v1.4.0
 	github.com/spf13/viper v1.18.2
 	github.com/yottalabsai/endorphin v0.0.15
 	go.uber.org/zap v1.27.0
