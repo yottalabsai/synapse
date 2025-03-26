@@ -3,23 +3,24 @@ package service
 import (
 	"encoding/json"
 	"fmt"
-	synapseGrpc "github.com/yottalabsai/endorphin/pkg/services/synapse"
+	pb "github.com/yottalabsai/endorphin/pkg/services/synapse"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/structpb"
 	"io"
 	"synapse/common/log"
 	"synapse/connector/types"
 )
 
 var (
-	ClientMap = make(map[string]synapseGrpc.SynapseService_CallServer)
+	ClientMap = make(map[string]pb.SynapseService_CallServer)
 )
 
 // SynapseServer synapse service server
 type SynapseServer struct {
-	synapseGrpc.UnimplementedSynapseServiceServer
+	pb.UnimplementedSynapseServiceServer
 }
 
 // NewSynapseServer create new synapse service server
@@ -27,7 +28,7 @@ func NewSynapseServer() *SynapseServer {
 	return &SynapseServer{}
 }
 
-func (s *SynapseServer) Call(stream synapseGrpc.SynapseService_CallServer) error {
+func (s *SynapseServer) Call(stream pb.SynapseService_CallServer) error {
 	// Get metadata from the incoming context
 	md, ok := metadata.FromIncomingContext(stream.Context())
 	if !ok || len(md["authorization"]) == 0 {
@@ -73,7 +74,7 @@ func (s *SynapseServer) Call(stream synapseGrpc.SynapseService_CallServer) error
 
 }
 
-func handleMessage(stream synapseGrpc.SynapseService_CallServer, req *synapseGrpc.JsonRpcRequest) error {
+func handleMessage(stream pb.SynapseService_CallServer, req *pb.JsonRpcRequest) error {
 	// log.Log.Info("received stream message", zap.Any("message", req))
 	messageId, err := getMessageId(req)
 	if err != nil {
@@ -87,14 +88,36 @@ func handleMessage(stream synapseGrpc.SynapseService_CallServer, req *synapseGrp
 	case types.Ping:
 		log.Log.Infow("Ping", zap.String("messageId", messageId))
 		// 	checkAgentHealth(req.ClientId, req.ModelType, stream)
-		result, err := parseMessage[types.Common](req)
+		result, err := parseObject[types.Common](req)
 		if err != nil {
 			log.Log.Errorw("failed to parse message", zap.String("messageId", messageId), zap.Error(err))
 		}
 
 		log.Log.Infow("Successfully parsed message", zap.String("messageId", messageId), zap.Any("result", result))
 
-		return stream.Send(nil)
+		pongRequest := &types.PongRequest{
+			Common: types.Common{
+				ClientId:    "123",
+				Timestamp:   0, // Set appropriate timestamp
+				MessageId:   messageId,
+				MessageType: types.Pong,
+			},
+		}
+
+		str, err := toJSON[types.PongRequest](pongRequest)
+		if err != nil {
+			log.Log.Errorw("failed to parse message", zap.String("messageId", messageId))
+			return err
+		}
+
+		request := &pb.JsonRpcRequest{
+			Jsonrpc: "2.0",
+			Id:      req.GetId(),
+			Method:  types.Pong,
+			Params:  structpb.NewStringValue(str),
+		}
+
+		return stream.Send(request)
 	case types.Inference:
 		log.Log.Info("Inference")
 
@@ -108,7 +131,7 @@ func handleMessage(stream synapseGrpc.SynapseService_CallServer, req *synapseGrp
 	return nil
 }
 
-func checkAgentHealth(clientId string, modeTypeStr string, stream synapseGrpc.SynapseService_CallServer) {
+func checkAgentHealth(clientId string, modeTypeStr string, stream pb.SynapseService_CallServer) {
 	//modeType := getModelType(modeTypeStr)
 	//_, ok := GlobalStreamManager.GetStreams()[clientId]
 	//if !ok {
@@ -116,24 +139,33 @@ func checkAgentHealth(clientId string, modeTypeStr string, stream synapseGrpc.Sy
 	//}
 }
 
-func parseMessage[T any](req *synapseGrpc.JsonRpcRequest) (*T, error) {
+func parseObject[T any](req *pb.JsonRpcRequest) (*T, error) {
 	var result T
 	text := req.Params.GetStringValue()
 	err := json.Unmarshal([]byte(text), &result)
 	if err != nil {
-		log.Log.Errorw("parseMessage error", zap.Any("text", text), zap.Error(err))
+		log.Log.Errorw("parseObject error", zap.Any("text", text), zap.Error(err))
 		return nil, err
 	}
 	return &result, nil
 }
 
-func getMessageId(req *synapseGrpc.JsonRpcRequest) (string, error) {
+func toJSON[T any](data *T) (string, error) {
+	result, err := json.Marshal(data)
+	if err != nil {
+		log.Log.Errorw("toJSON error", zap.Any("data", data), zap.Error(err))
+		return "", err
+	}
+	return string(result), nil
+}
+
+func getMessageId(req *pb.JsonRpcRequest) (string, error) {
 	var msgId string
 	var err error
 	switch id := req.GetId().(type) {
-	case *synapseGrpc.JsonRpcRequest_StringId:
+	case *pb.JsonRpcRequest_StringId:
 		msgId = id.StringId
-	case *synapseGrpc.JsonRpcRequest_NumberId:
+	case *pb.JsonRpcRequest_NumberId:
 		msgId = fmt.Sprintf("%d", id.NumberId)
 	default:
 		err = fmt.Errorf("unknown id type")

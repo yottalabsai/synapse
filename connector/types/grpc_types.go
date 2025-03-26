@@ -10,6 +10,7 @@ type Common struct {
 const (
 	Error       string = "error"
 	Ping        string = "ping"
+	Pong        string = "pong"
 	Inference   string = "inference"
 	TextToImage string = "text_to_image"
 )
@@ -18,7 +19,7 @@ type PingRequest struct {
 	Common
 }
 
-type PingResponse struct {
+type PongRequest struct {
 	Common
 }
 
