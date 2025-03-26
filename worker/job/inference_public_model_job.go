@@ -72,7 +72,7 @@ func loadModels(loadedModels map[string]bool, modelInfoMap map[string]*rpc.Model
 func loadModel(clientID string, loadedModels map[string]bool, modelInfo *rpc.ModelInfo, streamDetail *service.StreamDetail) bool {
 	if !streamDetail.Ready {
 		// create inference request message
-		msg := &synapseGrpc.Message{}
+		msg := &synapseGrpc.JsonRpcRequest{}
 		if err := service.GlobalStreamManager.SendMessage(clientID, msg); err != nil {
 			log.Log.Errorw("send load model message to client failed", zap.Error(err))
 		} else {

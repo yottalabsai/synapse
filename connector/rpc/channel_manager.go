@@ -7,8 +7,8 @@ import (
 
 // AgentChannel define the response channel
 type AgentChannel struct {
-	InferenceResultChan    chan *synapseGrpc.Message
-	TextToImageResultChain chan *synapseGrpc.Message
+	InferenceResultChan    chan *synapseGrpc.JsonRpcResponse
+	TextToImageResultChain chan *synapseGrpc.JsonRpcResponse
 	ErrorChan              chan error
 }
 
@@ -29,7 +29,7 @@ func (rm *ChannelManager) CreateChannel(requestID string) *AgentChannel {
 	defer rm.Unlock()
 
 	ch := &AgentChannel{
-		InferenceResultChan: make(chan *synapseGrpc.Message, 10), // 缓冲区大小可调整
+		InferenceResultChan: make(chan *synapseGrpc.JsonRpcResponse, 10), // 缓冲区大小可调整
 		//TextToImageResultChain: make(chan *synapseGrpc.YottaLabsStream_TextToImageResult, 10),
 		ErrorChan: make(chan error, 1),
 	}

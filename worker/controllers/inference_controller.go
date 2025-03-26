@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"github.com/gin-gonic/gin"
-	synapseGrpc "github.com/yottalabsai/endorphin/pkg/services/synapse"
 	"go.uber.org/zap"
 	"io"
 	"strings"
@@ -50,13 +49,15 @@ func (ctl *InferenceController) Inference(ctx *gin.Context) {
 
 func (ctl *InferenceController) DoInference(ctx *gin.Context, req *types.InferenceMessageRequest) {
 
-	messages := make([]*synapseGrpc.Message, len(req.Messages))
-	index := 0
-	for _, message := range req.Messages {
-		messages[index] = &synapseGrpc.Message{
-			Text: message.Content,
-		}
-	}
+	//messages := make([]*synapseGrpc.JsonRpcResponse, len(req.Messages))
+	//index := 0
+	//for _, message := range req.Messages {
+	//	messages[index] = &synapseGrpc.JsonRpcResponse{
+	//		Jsonrpc: "2.0",
+	//		Result:  result,
+	//		Id:      req.
+	//	}
+	//}
 
 	// filter ready client
 	requestID := utils.GenerateRequestId()
@@ -99,7 +100,7 @@ func (ctl *InferenceController) DoInference(ctx *gin.Context, req *types.Inferen
 	if !req.Stream {
 		select {
 		case result := <-respChannel.InferenceResultChan:
-			content := result.Text
+			content := result.GetResult().GetStringValue()
 			common.JSON(ctx, common.HttpOk, common.Ok(content))
 		case <-time.After(30 * time.Second):
 			ctx.JSON(common.HttpOk, common.ErrTimeout)
@@ -118,7 +119,7 @@ func (ctl *InferenceController) DoInference(ctx *gin.Context, req *types.Inferen
 			select {
 			case result := <-respChannel.InferenceResultChan:
 				// remove data: prefix
-				content := result.Text
+				content := result.GetResult().GetStringValue()
 				if len(content) > 6 && content[:6] == "data: " {
 					content = content[6:]
 				}

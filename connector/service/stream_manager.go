@@ -49,7 +49,7 @@ func (m *StreamManager) AddStream(clientID string,
 	}
 }
 
-func (m *StreamManager) SendMessage(clientID string, msg *synapseGrpc.Message) error {
+func (m *StreamManager) SendMessage(clientID string, msg *synapseGrpc.JsonRpcRequest) error {
 	m.mu.RLock()
 	streamDetail, ok := m.streamMap[clientID]
 	m.mu.RUnlock()

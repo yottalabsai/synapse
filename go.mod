@@ -16,7 +16,7 @@ require (
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/samber/lo v1.47.0
 	github.com/spf13/viper v1.18.2
-	github.com/yottalabsai/endorphin v0.0.15
+	github.com/yottalabsai/endorphin v0.0.16
 	go.uber.org/zap v1.27.0
 	golang.org/x/text v0.17.0
 	google.golang.org/grpc v1.62.1

@@ -7,13 +7,11 @@ type Common struct {
 	MessageType string `json:"message_type"`
 }
 
-type MessageType string
-
 const (
-	Error       MessageType = "error"
-	Ping        MessageType = "ping"
-	Inference   MessageType = "inference"
-	TextToImage MessageType = "text_to_image"
+	Error       string = "error"
+	Ping        string = "ping"
+	Inference   string = "inference"
+	TextToImage string = "text_to_image"
 )
 
 type PingRequest struct {
